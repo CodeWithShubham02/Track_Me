@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "676127802096",
+    "project_id": "joizone",
+    "storage_bucket": "joizone.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:676127802096:android:4eff7926f70ad240f4b835",
+        "android_client_info": {
+          "package_name": "com.example.joizone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuEKsEbYxnzAMMb6zSW3cTFZ2KT3_if_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,37 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "joizone",
+          "appId": "1:676127802096:android:4eff7926f70ad240f4b835",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "joizone",
+          "configurations": {
+            "android": "1:676127802096:android:4eff7926f70ad240f4b835",
+            "ios": "1:676127802096:ios:74f4a5c25125727bf4b835",
+            "web": "1:676127802096:web:845c7b6486d0cd2df4b835"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

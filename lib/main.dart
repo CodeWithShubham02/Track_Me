@@ -75,7 +75,7 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       //home: LoginScreen(),
-       home: AdminHomeScreen(cid: "2"),
+       home: AdminHomeScreen(cid: "1"),
     );
   }
 }

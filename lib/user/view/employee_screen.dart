@@ -1085,7 +1085,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   ),
                 ),
                 Text(
-                  "1.0.1",
+                  "1.1.1",
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.normal,

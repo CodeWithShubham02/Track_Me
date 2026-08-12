@@ -11,8 +11,8 @@ import GoogleMaps
   ) -> Bool {
 
     // Google Maps API Key
-    GMSServices.provideAPIKey("AIzaSyBF7OlUqnsWTXRMiwtwEk9ieQ4Ihq18")
-
+    GMSServices.provideAPIKey("AIzaSyAEpq7JOd9SBMTbWcmoJjHwd_sI5ZuJeow")
+//AIzaSyAXLAwGE0ka7M_QgX3Z0eynIzTxEbyKOWQ
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -72,3 +72,4 @@ import GoogleMaps
 //     }
 //   }
 }
+

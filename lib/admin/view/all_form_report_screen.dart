@@ -12,6 +12,7 @@ import 'package:joizone/admin/view/upload_remark_screen.dart';
 import 'package:joizone/user/model/client_form_report_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:universal_html/html.dart' as html;
+import 'package:url_launcher/url_launcher.dart';
 import '../controller/form_reports_controller.dart';
 import 'duplicate_form_screen.dart';
 
@@ -266,19 +267,25 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
 
     final List<int>? bytes = excel.encode();
     if (bytes == null) return;
+    final now = DateTime.now();
+    final date =
+        "${now.day.toString().padLeft(2, '0')}-"
+        "${now.month.toString().padLeft(2, '0')}-"
+        "${now.year}";
 
+    final fileName = "Export_Template_Joizone_$date.xlsx";
     if (kIsWeb) {
       // Web download
       final blob = html.Blob([Uint8List.fromList(bytes)]);
       final url = html.Url.createObjectUrlFromBlob(blob);
       final anchor = html.AnchorElement(href: url)
-        ..setAttribute("download", "Remarks_Update_Template_Joizone.xlsx")
+        ..setAttribute("download", fileName)
         ..click();
       html.Url.revokeObjectUrl(url);
     } else {
       // Android/iOS: Save to Documents folder
       final directory = await getApplicationDocumentsDirectory();
-      final filePath = "${directory.path}/Remarks_Update_Template_Joizone.xlsx";
+      final filePath = "${directory.path}/$fileName";
       final file = File(filePath);
       await file.writeAsBytes(bytes, flush: true);
 
@@ -805,7 +812,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
             ),
             child: Row(
               children: [
-                Container(child: Text("Download Template")),
+                Container(child: Text("Export Template")),//Download Template
               ],
             ),
           ),
@@ -818,7 +825,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(5), // Perfect square corners
             ),
-          ),child: Text("Upload Template")),
+          ),child: Text("Import Template")),//
           SizedBox(
             width: 10,
           ),
@@ -968,13 +975,13 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                 Colors.grey.shade200,
                               ),
                               columns: [
-                                DataColumn(label: Text("Action")),
-                                DataColumn(label: Text("UID")),
-                                DataColumn(label: Text("User Id")),
+                                DataColumn(label: Text("Action",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                //DataColumn(label: Text("UID")),
+                                DataColumn(label: Text("User Id",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                                 DataColumn(
                                   label: Row(
                                     children: [
-                                      const Text("User Name"),
+                                      const Text("User Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
                                       IconButton(
                                         icon: const Icon(Icons.filter_list, size: 18,color: Color(0xff2563EB),),
                                         onPressed: _showUserFilter,
@@ -985,7 +992,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                 DataColumn(
                                   label: Row(
                                     children: [
-                                      const Text("City Name"),
+                                      const Text("City Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
                                       IconButton(
                                         icon: const Icon(Icons.filter_list, size: 18,color: Color(0xff2563EB),),
                                         onPressed: _showCityFilter,
@@ -993,15 +1000,15 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                     ],
                                   ),
                                 ),
-                                DataColumn(label: Text("Report Date")),
-                                DataColumn(label: Text("Report Time")),
-                                DataColumn(label: Text("Application Number")),
-                                DataColumn(label: Text("Relation")),
-                                DataColumn(label: Text("Variant")),
+                                DataColumn(label: Text("Report Date",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Report Time",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Application Number",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Relation",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Variant",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                                 DataColumn(
                                   label: Row(
                                     children: [
-                                      const Text("Status"),
+                                      const Text("Status",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
                                       IconButton(
                                         icon: const Icon(Icons.filter_list, size: 18,color: Color(0xff2563EB),),
                                         onPressed: _showStatusFilter,
@@ -1009,13 +1016,14 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                     ],
                                   ),
                                 ),
-                                DataColumn(label: Text("Remarks")),
-                                DataColumn(label: Text("Manager Remarks")),
-                                DataColumn(label: Text("Contact Number")),
-                                DataColumn(label: Text("Snapshot")),
-                                DataColumn(label: Text("Address")),
-                                DataColumn(label: Text("Kiosk Name")),
-                                DataColumn(label: Text("Bank Remark")),
+                                DataColumn(label: Text("Remarks",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Manager Remarks",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Contact Number",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Snapshot",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Address",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Branch Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Bank Remark",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+
                                 // DataColumn(
                                 //   label: Row(
                                 //     children: [
@@ -1027,8 +1035,9 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                 //     ],
                                 //   ),
                                 // ),
-                                DataColumn(label: Text("Update Status")),
-                                DataColumn(label: Text("Remarks Date")),
+
+                                DataColumn(label: Text("Update Status",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Remarks Date",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                               ],
                               rows: paginatedReports.map<DataRow>((report) {
                                 return DataRow(
@@ -1050,11 +1059,67 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                               _confirmAndUpdateDuplicate(report);
                                             },
                                           ),
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.location_on_outlined,
+                                              color: Colors.black,
+                                            ),
+                                            onPressed: () async {
+                                              debugPrint(report.uid.toString());
+                                              debugPrint(report.gpsLocation.toString());
+
+                                              final location = report.gpsLocation;
+
+                                              if (location == null || location.toString().trim().isEmpty) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text("Location not available"),
+                                                  ),
+                                                );
+                                                return;
+                                              }
+
+                                              try {
+                                                // Agar gpsLocation "19.0760,72.8777" format mein hai
+                                                final parts = location.toString().split(',');
+
+                                                if (parts.length < 2) {
+                                                  throw Exception("Invalid latitude/longitude");
+                                                }
+
+                                                final latitude = parts[0].trim();
+                                                final longitude = parts[1].trim();
+
+                                                final Uri googleMapUrl = Uri.parse(
+                                                  "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude",
+                                                );
+
+                                                if (await canLaunchUrl(googleMapUrl)) {
+                                                  await launchUrl(
+                                                    googleMapUrl,
+                                                    mode: LaunchMode.externalApplication,
+                                                  );
+                                                } else {
+                                                  throw Exception("Could not open Google Maps");
+                                                }
+                                              } catch (e) {
+                                                debugPrint("Map Error: $e");
+
+                                                if (mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text("Unable to open location: $e"),
+                                                    ),
+                                                  );
+                                                }
+                                              }
+                                            },
+                                          ),
                                         ],
                                       ),
                                     ),
 
-                                    DataCell(Text(report.uid.toString())),
+                                    //DataCell(Text(report.uid.toString())),
                                     DataCell(Text(report.userId)),
                                     DataCell(Text(report.userName)),
                                     DataCell(Text(report.siteName)),
@@ -1143,6 +1208,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                         },
                                       ),
                                     ),
+
                                     DataCell(Text(report.kioskName)),
                                     DataCell(Text(report.bankRemarks)),
                                     DataCell(Text(report.updateStatus)),

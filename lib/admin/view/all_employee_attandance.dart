@@ -617,14 +617,14 @@ class _AllEmployeeAttendanceScreenState
                           width: 1,
                         ),
                         columns: [
-                          const DataColumn(label: Text("Location")),
-                          const DataColumn(label: Text("Date")),
-                          const DataColumn(label: Text("userid")),
+                          const DataColumn(label: Text("Location",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                          const DataColumn(label: Text("Date",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                          const DataColumn(label: Text("userid",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                           //const DataColumn(label: Text("aid")),
                           DataColumn(
                             label: Row(
                               children: [
-                                const Text("Name"),
+                                const Text("Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
                                 const SizedBox(width: 5),
                                 InkWell(
                                   onTap: () {
@@ -648,7 +648,7 @@ class _AllEmployeeAttendanceScreenState
                           DataColumn(
                             label: Row(
                               children: [
-                                const Text("Office Name"),
+                                const Text("Office Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
                                 const SizedBox(width: 5),
                                 InkWell(
                                   onTap: () {
@@ -672,7 +672,7 @@ class _AllEmployeeAttendanceScreenState
                           DataColumn(
                             label: Row(
                               children: [
-                                const Text("User Type"),
+                                const Text("User Type",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
                                 const SizedBox(width: 5),
                                 InkWell(
                                   onTap: () {
@@ -696,7 +696,7 @@ class _AllEmployeeAttendanceScreenState
                           DataColumn(
                             label: Row(
                               children: [
-                                const Text("Status"),
+                                const Text("Status",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
                                 const SizedBox(width: 5),
                                 InkWell(
                                   onTap: () {
@@ -717,16 +717,16 @@ class _AllEmployeeAttendanceScreenState
                               ],
                             ),
                           ),
-                          const DataColumn(label: Text("Shift Time")),
-                          const DataColumn(label: Text("Punch In Time")),
-                          const DataColumn(label: Text("Punch In Remark")),
-                          const DataColumn(label: Text("Punch In Image")),
-                          const DataColumn(label: Text("Punch Out Time")),
-                          const DataColumn(label: Text("Punch Out Remark")),
-                          const DataColumn(label: Text("Punch Out Image")),
+                          const DataColumn(label: Text("Shift Time",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                          const DataColumn(label: Text("Punch In Time",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                          const DataColumn(label: Text("Punch In Remark",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                          const DataColumn(label: Text("Punch In Image",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                          const DataColumn(label: Text("Punch Out Time",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                          const DataColumn(label: Text("Punch Out Remark",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                          const DataColumn(label: Text("Punch Out Image",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
 
                           // DataColumn(label: Text("Late")),
-                          const DataColumn(label: Text("Working Hours")),
+                          const DataColumn(label: Text("Working Hours",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                           // DataColumn(label: Text("Break Min")),
                         ],
 

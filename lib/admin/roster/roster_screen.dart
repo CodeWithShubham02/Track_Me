@@ -185,18 +185,18 @@ class _RosterScreenState extends State<RosterScreen> {
           }
 
           print(rosterData);
-
+          print("=======================");
+          debugPrint("User Roster Date");
+          print("========================");
+          print(rosterData);
           final result =
           await RosterService.uploadRoster(rosterData);
 
           if (result["status"] == true) {
-
             ScaffoldMessenger.of(context).showSnackBar(
-
               SnackBar(
                 content: Text(result["message"]),
               ),
-
             );
 
             rosterData.clear();

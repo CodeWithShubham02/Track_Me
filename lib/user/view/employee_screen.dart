@@ -20,7 +20,9 @@ import 'package:joizone/user/view/video_dialogtl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../../admin/controller/attendance_summary_controller.dart';
 import '../../admin/dynamic_form/dynamic_form_screen.dart';
+import '../../admin/model/attendance_summary_model.dart';
 import '../../admin/model/user_model.dart';
 import '../../admin/view/login_screen.dart';
 import '../../services/fcm_service.dart';
@@ -53,7 +55,419 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   StreamSubscription<List<ConnectivityResult>>? connectivitySub;
 
   bool internetDialogShown = false;
+  //==============Ai====================
+  String getGreeting() {
+    final hour = DateTime.now().hour;
 
+    if (hour >= 5 && hour < 12) {
+      return "Good Morning";
+    } else if (hour >= 12 && hour < 17) {
+      return "Good Afternoon";
+    } else if (hour >= 17 && hour < 21) {
+      return "Good Evening";
+    } else {
+      return "Good Night";
+    }
+  }
+  IconData getGreetingIcon() {
+    final hour = DateTime.now().hour;
+
+    if (hour >= 5 && hour < 12) {
+      return Icons.wb_sunny_outlined;
+    } else if (hour >= 12 && hour < 17) {
+      return Icons.wb_sunny;
+    } else if (hour >= 17 && hour < 21) {
+      return Icons.wb_twilight;
+    } else {
+      return Icons.nightlight_round;
+    }
+  }
+  Map<String, dynamic>? monthlyData;
+  bool isLoadingMonthlyData = true;
+  Future<void> getMonthlyAttendanceData() async {
+    try {
+      final now = DateTime.now();
+
+      // =========================
+      // CURRENT MONTH
+      // =========================
+
+      final firstDayOfMonth = DateTime(
+        now.year,
+        now.month,
+        1,
+      );
+
+      final lastDayOfMonth = DateTime(
+        now.year,
+        now.month + 1,
+        0,
+      );
+
+      final fromDate = DateFormat(
+        "yyyy-MM-dd",
+      ).format(firstDayOfMonth);
+
+      final toDate = DateFormat(
+        "yyyy-MM-dd",
+      ).format(lastDayOfMonth);
+
+      final monthlyList =
+      await AttendanceSummaryController.fetchSummary(
+        fromDate: fromDate,
+        toDate: toDate,
+        cid: widget.userModel.cid,
+      );
+
+      // Current logged-in user
+      AttendanceSummary? monthlyUser;
+
+      for (final item in monthlyList) {
+        if (item.uid.toString() ==
+            widget.userModel.uid.toString()) {
+          monthlyUser = item;
+          break;
+        }
+      }
+
+      if (monthlyUser == null) {
+        debugPrint("Monthly user data not found");
+        return;
+      }
+
+      // =========================
+      // YESTERDAY
+      // =========================
+
+      final yesterday = now.subtract(
+        const Duration(days: 1),
+      );
+
+      final yesterdayDate = DateFormat(
+        "yyyy-MM-dd",
+      ).format(yesterday);
+
+      final yesterdayList =
+      await AttendanceSummaryController.fetchSummary(
+        fromDate: yesterdayDate,
+        toDate: yesterdayDate,
+        cid: widget.userModel.cid,
+      );
+
+      AttendanceSummary? yesterdayUser;
+
+      for (final item in yesterdayList) {
+        if (item.uid.toString() ==
+            widget.userModel.uid.toString()) {
+          yesterdayUser = item;
+          break;
+        }
+      }
+
+      // Agar yesterday ka data nahi mila
+      final yesterdayWorkingHours =
+          yesterdayUser?.totalTimeFormate ?? "0h 0m";
+
+      debugPrint(
+        "Yesterday Working Hours: $yesterdayWorkingHours",
+      );
+
+      debugPrint(
+        "Monthly Present: ${monthlyUser.totalPresent}",
+      );
+
+      debugPrint(
+        "Monthly Absent: ${monthlyUser.totalAbsent}",
+      );
+
+      debugPrint(
+        "Monthly WO: ${monthlyUser.totalHoliday}",
+      );
+
+      // =========================
+      // SHOW DIALOG
+      // =========================
+
+      if (!mounted) return;
+
+      showMonthlyAttendanceDialog(
+        monthlyUser,
+      );
+    } catch (e) {
+      debugPrint(
+        "Monthly Attendance Error: $e",
+      );
+    }
+  }
+  void showMonthlyAttendanceDialog(
+      AttendanceSummary monthlyUser,
+      ) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                  // =========================
+                  // GOOD MORNING
+                  // =========================
+
+                  Icon(
+                    getGreetingIcon(),
+                    size: 45,
+                    color: Colors.orange,
+                  ),
+                  const SizedBox(height: 8),
+
+                  Text(
+                    "${getGreeting()}, ${widget.userModel.fullName}",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  Text(
+                    DateFormat("MMMM yyyy")
+                        .format(DateTime.now()),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // =========================
+                  // YESTERDAY WORKING HOURS
+                  // =========================
+
+                  // =========================
+// TOTAL WORKING HOURS
+// =========================
+
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.access_time,
+                            color: Colors.blue,
+                            size: 28,
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Total Working Hours",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+
+                              const SizedBox(height: 4),
+
+                              Text(
+                                monthlyUser.totalTimeFormate.isEmpty
+                                    ? "0h 0m"
+                                    : monthlyUser.totalTimeFormate,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  // =========================
+                  // TOTAL MONTH DAYS
+                  // =========================
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: attendanceSummaryBox(
+                          title: "Total Days",
+                          value: DateTime(
+                            DateTime.now().year,
+                            DateTime.now().month + 1,
+                            0,
+                          ).day.toString(),
+                          icon: Icons.calendar_month,
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child: attendanceSummaryBox(
+                          title: "Present",
+                          value: monthlyUser
+                              .totalPresent
+                              .toString(),
+                          icon: Icons.check_circle,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // =========================
+                  // ABSENT + WO
+                  // =========================
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: attendanceSummaryBox(
+                          title: "Absent",
+                          value: monthlyUser
+                              .totalAbsent
+                              .toString(),
+                          icon: Icons.cancel,
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child: attendanceSummaryBox(
+                          title: "WO",
+                          value: monthlyUser
+                              .totalHoliday
+                              .toString(),
+                          icon: Icons.weekend,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // =========================
+                  // CONTINUE
+                  // =========================
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding:
+                        const EdgeInsets.symmetric(
+                          vertical: 13,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                          BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Continue",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    });
+  }
+  Widget attendanceSummaryBox({
+    required String title,
+    required String value,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: 15,
+        horizontal: 8,
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.grey.shade300,
+        ),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            size: 27,
+            color: Colors.blue,
+          ),
+
+          const SizedBox(height: 7),
+
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 3),
+
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  //==============Ai====================
   /* ---------------- INIT ---------------- */
   DateTime _currentTime = DateTime.now();
   //user permission allow
@@ -1474,12 +1888,44 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           children: [
-            tableRow("User ID", widget.userModel.userid),
-            tableRow("Name", widget.userModel.fullName),
-            tableRow("Branch", widget.userModel.branchName),
+            tableRow(
+              "User ID",
+              widget.userModel.userid,
+            ),
+
+            tableRow(
+              "Name",
+              widget.userModel.fullName,
+            ),
+
+            tableRow(
+              "Branch",
+              widget.userModel.branchName,
+            ),
+
             tableRow(
               "Shift",
-              "${convertTo12Hour(widget.userModel.shiftStart)} - ${convertTo12Hour(widget.userModel.shiftEnd)}",
+              "${convertTo12Hour(widget.userModel.shiftStart)} - "
+                  "${convertTo12Hour(widget.userModel.shiftEnd)}",
+            ),
+
+            // More button row
+            TableRow(
+              children: [
+                const SizedBox(),
+
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    onPressed: () {
+                      getMonthlyAttendanceData();
+                    },
+                    icon: const Icon(
+                      Icons.more_horiz,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

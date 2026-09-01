@@ -354,35 +354,45 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
 
     // Header Row
     sheet.appendRow([
-      TextCellValue("UID"),
-      TextCellValue("Created Date"),
-      TextCellValue("Updated date"),
-      TextCellValue("City Name"),
+      // TextCellValue("UID"),
+      // TextCellValue("Created Date"),
+      // TextCellValue("Updated date"),
       TextCellValue("User Id"),
-      TextCellValue("Password"),
       TextCellValue("Full Name"),
-      TextCellValue("Image"),
-      TextCellValue("Office Name"),
-      TextCellValue("IMEI"),
-      TextCellValue("Email Address"),
+      TextCellValue("Employee Id"),
       TextCellValue("Contact Number"),
+      TextCellValue("Email Address"),
+      TextCellValue("Date Of Joining"),
+      TextCellValue("Office Address"),
+      TextCellValue("Home State"),
+      TextCellValue("City Name"),
+
+      //TextCellValue("Password"),
+
+      TextCellValue("Image"),
+
+
+
+
       TextCellValue("Gender"),
       TextCellValue("Reporting Position Name"),
-      TextCellValue("Reporting"),
+      TextCellValue("Reporting Manager Id"),
       TextCellValue("Reporting Manager Name"),
-
-      TextCellValue("State Name"),
-      TextCellValue("Full Address"),
-      TextCellValue("Pin Code"),
-      TextCellValue("Distance"),
-      TextCellValue("Office Lat"),
-      TextCellValue("Office Lng"),
+      TextCellValue("IMEI"),
       TextCellValue("User Type"),
+      TextCellValue("Status"),
+
+      // TextCellValue("Full Address"),
+      // TextCellValue("Pin Code"),
+      // TextCellValue("Distance"),
+      // TextCellValue("Office Lat"),
+      // TextCellValue("Office Lng"),
+
       // TextCellValue("Shift Start"),
       // TextCellValue("Shift End"),
-      TextCellValue("Date Of joining"),
-      TextCellValue("Last Working Date"),
-      TextCellValue("Current Status"),
+
+      // TextCellValue("Last Working Date"),
+
       //TextCellValue("Role"),
 
 
@@ -393,28 +403,36 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
     for (var u in users) {
 
       sheet.appendRow([
-        TextCellValue(u.uid ?? ""),
-        TextCellValue(
-          u.createdAt != null
-              ? "${DateFormat('dd MMM yyyy').format(DateTime.parse(u.createdAt!))} "
-              "${DateFormat('hh:mm a').format(DateTime.parse(u.createdAt!))}"
-              : "",
-        ),
-        TextCellValue(
-          u.updatedAt != null
-              ? "${DateFormat('dd MMM yyyy').format(DateTime.parse(u.updatedAt!))} "
-              "${DateFormat('hh:mm a').format(DateTime.parse(u.updatedAt!))}"
-              : "",
-        ),
-        TextCellValue(u.cityName ?? ""),
+        // TextCellValue(u.uid ?? ""),
+        // TextCellValue(
+        //   u.createdAt != null
+        //       ? "${DateFormat('dd MMM yyyy').format(DateTime.parse(u.createdAt!))} "
+        //       "${DateFormat('hh:mm a').format(DateTime.parse(u.createdAt!))}"
+        //       : "",
+        // ),
+        // TextCellValue(
+        //   u.updatedAt != null
+        //       ? "${DateFormat('dd MMM yyyy').format(DateTime.parse(u.updatedAt!))} "
+        //       "${DateFormat('hh:mm a').format(DateTime.parse(u.updatedAt!))}"
+        //       : "",
+        // ),
         TextCellValue(u.userid ?? ""),
-        TextCellValue(u.password ?? ""),
-        TextCellValue(u.fullName ?? ""),
-        TextCellValue(u.userImg ?? ""),
-        TextCellValue(u.branchName ?? ""),
-        TextCellValue(u.imeiNo ?? ""),
-        TextCellValue(u.userEmail ?? ""),
+        TextCellValue("${u.fullName ?? ""} ${u.lastName ?? ""}"),
+        TextCellValue(u.userid ?? ""),
         TextCellValue(u.userPhone ?? ""),
+        TextCellValue(u.userEmail ?? ""),
+        TextCellValue(u.dateOfJoining ?? ""),
+        TextCellValue(u.branchName ?? ""),
+        TextCellValue(u.districtName ?? ""),
+        TextCellValue(u.cityName ?? ""),
+
+        //TextCellValue(u.password ?? ""),
+
+        TextCellValue(u.userImg ?? ""),
+
+
+
+
         TextCellValue(u.gender ?? ""),
         TextCellValue(
           (() {
@@ -456,19 +474,21 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
             }
           })(),
         ),
-
-        TextCellValue(u.districtName ?? ""),
-        TextCellValue(u.fullAddress ?? ""),
-        TextCellValue(u.pinCode ?? ""),
-        TextCellValue(u.branchDistance ?? ""),
-        TextCellValue(u.branchLat ?? ""),
-        TextCellValue(u.branchLong ?? ""),
+        TextCellValue(u.imeiNo ?? ""),
         TextCellValue(u.departmentName ?? ""),
+        TextCellValue(u.status ?? ""),
+
+        // TextCellValue(u.fullAddress ?? ""),
+        // TextCellValue(u.pinCode ?? ""),
+        // TextCellValue(u.branchDistance ?? ""),
+        // TextCellValue(u.branchLat ?? ""),
+        // TextCellValue(u.branchLong ?? ""),
+
         // TextCellValue(convertTo12Hour(u.shiftStart ?? "")),
         // TextCellValue(convertTo12Hour(u.shiftEnd ?? "")),
-        TextCellValue(u.dateOfJoining ?? ""),
-        TextCellValue(u.lastworkingdate),
-        TextCellValue(u.status ?? ""),
+
+        // TextCellValue(u.lastworkingdate),
+
         //TextCellValue(u.role ?? ""),
 
       ]);
@@ -478,7 +498,7 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
     if (fileBytes == null) return;
 
     final fileName =
-        "USERS_LIST${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.xlsx";
+        "USERS_DETAILS_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.xlsx";
 
     if (kIsWeb) {
       // 🌐 WEB DOWNLOAD
@@ -804,18 +824,20 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
                                 width: 1,
                               ),
                               columns:  [
-                                DataColumn(label: Text("Action")),
-                                DataColumn(label: Text("UID")),
-                                DataColumn(label: Text("Create Date")),
-                                DataColumn(label: Text("Updated Date")),
-                                DataColumn(label: Text("City Name")),
-                                DataColumn(label: Text("UserID")),
-                                DataColumn(label: Text("Password")),
-                                DataColumn(label: Text("Full Name")),
+                                DataColumn(label: Text("Action",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                //DataColumn(label: Text("UID")),
+                                DataColumn(label: Text("Create Date",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                //DataColumn(label: Text("Updated Date")),
+                                DataColumn(label: Text("City Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("UserID",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Password",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Full Name"
+                                  ,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),
+                                )),
                             DataColumn(
                               label: Row(
                                 children: [
-                                  const Text("Office Name"),
+                                  const Text("Office Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
                                   IconButton(
                                     icon: Icon(
                                       Icons.filter_list,
@@ -829,27 +851,27 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
                                 ],
                               ),
                             ),
-                                DataColumn(label: Text("Status")),
+                                DataColumn(label: Text("Status",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
 
-                                DataColumn(label: Text("Image")),
-                                DataColumn(label: Text("IMEI")),
-                                DataColumn(label: Text("Email")),
-                                DataColumn(label: Text("Phone")),
-                                DataColumn(label: Text("Gender")),
+                                DataColumn(label: Text("Image",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("IMEI",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Email",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Phone",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Gender",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
 
-                                DataColumn(label: Text("State Name")),
-                                DataColumn(label: Text("Address")),
-                                DataColumn(label: Text("Pin Code")),
-                                DataColumn(label: Text("Distance")),
-                                DataColumn(label: Text("Lat")),
-                                DataColumn(label: Text("Long")),
-                                DataColumn(label: Text("Reporting Position Name")),
-                                DataColumn(label: Text("Reporting")),
-                                DataColumn(label: Text("Reporting Manager Name")),
-                                DataColumn(label: Text("User Type")),
+                                DataColumn(label: Text("State Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Address",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Pin Code",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Distance",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Lat",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Long",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Reporting Position Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Reporting Manager Id",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Reporting Manager Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("User Type",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                                 // DataColumn(label: Text("Shift Start")),
                                 // DataColumn(label: Text("Shift End")),
-                                DataColumn(label: Text("Joining Date")),
+                                DataColumn(label: Text("Joining Date",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                                // DataColumn(label: Text("Last Working Date")),
 
                                // DataColumn(label: Text("Role")),
@@ -875,7 +897,7 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
                                       // ),
                                     ],
                                   )),
-                                  DataCell(Text(u.uid)),
+                                  //DataCell(Text(u.uid)),
                                  // DataCell(Text(u.cid)),
                                   DataCell(Row(
                                     children: [
@@ -884,13 +906,13 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
                                       Text(formattedTime)
                                     ],
                                   )),
-                                  DataCell(Row(
-                                    children: [
-                                      Text(formattedDateU),
-                                      Text(' - '),
-                                      Text(formattedTimeU)
-                                    ],
-                                  )),
+                                  // DataCell(Row(
+                                  //   children: [
+                                  //     Text(formattedDateU),
+                                  //     Text(' - '),
+                                  //     Text(formattedTimeU)
+                                  //   ],
+                                  // )),
                                   DataCell(Text(u.cityName)),
                                   DataCell(Text(u.userid)),
                                   DataCell(Text(u.password)),

@@ -596,7 +596,7 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
                 TextButton(
                   onPressed: () {
                     selectedBranches.clear();
-                    applyBranchFilter();
+                    applyFilters();
                     Navigator.pop(context);
                   },
                   child: const Text("Clear"),
@@ -604,7 +604,98 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
                 ElevatedButton(
                   onPressed: () {
                     selectedBranches = tempSelected;
-                    applyBranchFilter();
+                    applyFilters();
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Apply"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  //==================================
+  //========== Status Filter =========
+
+  String? selectedStatusFilter;
+  void applyFilters() {
+    setState(() {
+      filteredUsers = users.where((u) {
+        // Branch filter
+        final branchMatch = selectedBranches.isEmpty ||
+            selectedBranches.contains(u.branchName);
+
+        // Status filter
+        final statusMatch = selectedStatusFilter == null ||
+            selectedStatusFilter!.isEmpty ||
+            u.status.toLowerCase() ==
+                selectedStatusFilter!.toLowerCase();
+
+        return branchMatch && statusMatch;
+      }).toList();
+    });
+  }
+  void showStatusFilter() {
+    String? tempStatus = selectedStatusFilter;
+
+    showDialog(
+      context: context,
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: const Text("Filter by Status"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RadioListTile<String?>(
+                    title: const Text("All"),
+                    value: null,
+                    groupValue: tempStatus,
+                    onChanged: (value) {
+                      setStateDialog(() {
+                        tempStatus = value;
+                      });
+                    },
+                  ),
+                  RadioListTile<String>(
+                    title: const Text("Active"),
+                    value: "active",
+                    groupValue: tempStatus,
+                    onChanged: (value) {
+                      setStateDialog(() {
+                        tempStatus = value;
+                      });
+                    },
+                  ),
+                  RadioListTile<String>(
+                    title: const Text("Inactive"),
+                    value: "inactive",
+                    groupValue: tempStatus,
+                    onChanged: (value) {
+                      setStateDialog(() {
+                        tempStatus = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    selectedStatusFilter = null;
+                    applyFilters();
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Clear"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    selectedStatusFilter = tempStatus;
+                    applyFilters();
                     Navigator.pop(context);
                   },
                   child: const Text("Apply"),
@@ -671,14 +762,14 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
                     width: 1,
                   ),
                   columns:  [
-                    DataColumn(label: Text("Action")),
-                    DataColumn(label: Text("UID")),
-                    DataColumn(label: Text("UserID")),
-                    DataColumn(label: Text("Password")),
+                    DataColumn(label: Text("Action",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    //DataColumn(label: Text("UID")),
+                    DataColumn(label: Text("UserID",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Password",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                     DataColumn(
                       label: Row(
                         children: [
-                          const Text("Office Name"),
+                          const Text("Office Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
                           IconButton(
                             icon: Icon(
                               Icons.filter_list,
@@ -692,30 +783,47 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
                         ],
                       ),
                     ),
-                    DataColumn(label: Text("Status")),
-                    DataColumn(label: Text("Full Name")),
-                    DataColumn(label: Text("Image")),
-                    DataColumn(label: Text("IMEI")),
+                DataColumn(
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text("Status",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
+                      IconButton(
+                        icon: Icon(
+                          Icons.filter_list,
+                          size: 18,
+                          color: selectedStatusFilter != null
+                              ? Colors.blue
+                              : Colors.grey,
+                        ),
+                        onPressed: showStatusFilter,
+                      ),
+                    ],
+                  ),
+                ),
+                    DataColumn(label: Text("Full Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Image",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("IMEI",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
 
-                    DataColumn(label: Text("Email")),
-                    DataColumn(label: Text("Phone")),
-                    DataColumn(label: Text("Gender")),
-                    DataColumn(label: Text("Address")),
-                    DataColumn(label: Text("Distance")),
-                    DataColumn(label: Text("Lat")),
-                    DataColumn(label: Text("Long")),
-                    DataColumn(label: Text("Reporting Position Name")),
-                    DataColumn(label: Text("Reporting")),
-                    DataColumn(label: Text("Reporting Manager Name")),
-                    DataColumn(label: Text("User Type")),
-                    DataColumn(label: Text("Shift Start")),
-                    DataColumn(label: Text("Shift End")),
-                    DataColumn(label: Text("Joining Date")),
-                    DataColumn(label: Text("Last Working Date")),
+                    DataColumn(label: Text("Email",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Phone",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Gender",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Address",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Distance",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Lat",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Long",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Reporting Position Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Reporting Manager Id",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Reporting Manager Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("User Type",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Shift Start",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Shift End",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Joining Date",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Last Working Date",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
 
-                    DataColumn(label: Text("Role")),
-                    DataColumn(label: Text("Created At")),
-                    DataColumn(label: Text("Updated At")),
+                    DataColumn(label: Text("Role",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Created At",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(label: Text("Updated At",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                   ],
                   rows: filteredUsers.map((u) {
                     return DataRow(cells: [
@@ -731,7 +839,7 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
                           // ),
                         ],
                       )),
-                      DataCell(Text(u.uid)),
+                      //DataCell(Text(u.uid)),
                       // DataCell(Text(u.cid)),
                       DataCell(Text(u.userid)),
                       DataCell(Text(u.password)),

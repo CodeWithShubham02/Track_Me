@@ -36,21 +36,101 @@ class UserController {
       return "DEVICE_ERROR";
     }
   }
+
   Future<String> getFcmToken() async {
     try {
+      final FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      // =========================
+      // ANDROID
+      // =========================
+      if (Platform.isAndroid) {
+        final String? token = await messaging.getToken();
 
-      // Request permission (important for iOS)
-      await messaging.requestPermission();
+        debugPrint("Android FCM Token: $token");
 
-      String? token = await messaging.getToken();
+        return token ?? "NO_TOKEN";
+      }
 
-      debugPrint("FCM Token: $token");
+      // =========================
+      // iOS
+      // =========================
+      if (Platform.isIOS) {
+        // 1. Request notification permission
+        final NotificationSettings settings =
+        await messaging.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+          provisional: false,
+        );
 
-      return token ?? "NO_TOKEN";
-    } catch (e) {
+        debugPrint(
+          "Notification permission: "
+              "${settings.authorizationStatus}",
+        );
+
+        // 2. Check permission
+        if (settings.authorizationStatus !=
+            AuthorizationStatus.authorized &&
+            settings.authorizationStatus !=
+                AuthorizationStatus.provisional) {
+          debugPrint("Notification permission denied");
+
+          return "PERMISSION_DENIED";
+        }
+
+        // 3. Wait for APNs token
+        String? apnsToken;
+
+        for (int i = 0; i < 10; i++) {
+          apnsToken = await messaging.getAPNSToken();
+
+          debugPrint(
+            "APNs Token attempt ${i + 1}: $apnsToken",
+          );
+
+          if (apnsToken != null) {
+            break;
+          }
+
+          await Future.delayed(
+            const Duration(seconds: 1),
+          );
+        }
+
+        // 4. Check APNs token
+        if (apnsToken == null) {
+          debugPrint(
+            "APNs token is still NULL after 10 attempts.",
+          );
+
+          return "NO_APNS_TOKEN";
+        }
+
+        debugPrint("APNs Token: $apnsToken");
+
+        // 5. Get FCM token
+        final String? fcmToken =
+        await messaging.getToken();
+
+        debugPrint("iOS FCM Token: $fcmToken");
+
+        return fcmToken ?? "NO_FCM_TOKEN";
+      }
+
+      // =========================
+      // macOS / Other
+      // =========================
+      debugPrint(
+        "FCM token not handled for this platform",
+      );
+
+      return "UNSUPPORTED_PLATFORM";
+    } catch (e, stackTrace) {
       debugPrint("FCM Error: $e");
+      debugPrint("StackTrace: $stackTrace");
+
       return "TOKEN_ERROR";
     }
   }

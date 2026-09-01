@@ -20,6 +20,7 @@ import '../controller/branch_controller.dart';
 import '../controller/user_controller.dart';
 import '../model/branch_model.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 
 class AddUserScreen extends StatefulWidget {
   final String cid;
@@ -209,71 +210,86 @@ class _AddUserScreenState extends State<AddUserScreen> {
       );
 
       if (picked == null) {
-        setState(() => isLoadingPhoto = false);
         return null;
       }
 
       final Uint8List bytes = await picked.readAsBytes();
 
-      // 👇 local preview ke liye
+      // Preview
       if (!kIsWeb) {
         photo = File(picked.path);
       } else {
         webPhoto = bytes;
       }
 
-      setState(() {}); // preview refresh
+      setState(() {});
 
-      final fileName =
-          "uploads/image_${DateTime.now().millisecondsSinceEpoch}.jpg";
+      // Upload through PHP
+      final imageUrl = await uploadImageToServer(bytes);
 
-      final imageUrl = await uploadImageToS3(
-        imageBytes: bytes,
-        bucket: "joizone-s3",
-        objectKey: fileName,
-      );
+      if (imageUrl != null) {
+        setState(() {
+          photoUrl = imageUrl;
+        });
+      }
 
-      photoUrl = imageUrl; // ✅ save public URL
       return imageUrl;
+
     } catch (e) {
-      print("❌ Pick/Upload error: $e");
+      debugPrint("❌ Pick/Upload error: $e");
       return null;
+
     } finally {
-      setState(() => isLoadingPhoto = false);
+      if (mounted) {
+        setState(() {
+          isLoadingPhoto = false;
+        });
+      }
     }
   }
 
-  Future<String> uploadImageToS3({
-    required Uint8List imageBytes,
-    required String bucket,
-    required String objectKey,
-    String region = 'ap-south-1',
-  }) async {
-    final s3 = S3(
-      region: region,
-      credentials: AwsClientCredentials(
-        accessKey: decryptFMS(
-          "TohPtOvObC8NnBOp/1BM30tSr97U803JZ+gqI3Jf4uM=",
-          "QWRTEfnfdys635",
+  Future<String?> uploadImageToServer(Uint8List bytes) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse(
+          'http://15.206.209.30/attendance/upload_image.php',
         ),
-        secretKey: decryptFMS(
-          "Exz2WIEt2w1JRVZREvtIPeRX5Jti2p2mcHqs7Hh87/47BQidFAUAkLOxlzYFlctw",
-          "QWRTEfnfdys635",
+      );
+
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'image',
+          bytes,
+          filename:
+          'image_${DateTime.now().millisecondsSinceEpoch}.jpg',
         ),
-      ),
-    );
+      );
 
-    await s3.putObject(
-      bucket: bucket,
-      key: objectKey,
-      body: imageBytes,
-      contentLength: imageBytes.length,
-      contentType: 'image/jpeg',
-    );
+      final response = await request.send();
 
-    return "https://$bucket.s3.$region.amazonaws.com/$objectKey";
+      final responseBody = await response.stream.bytesToString();
+
+      debugPrint("Upload Status: ${response.statusCode}");
+      debugPrint("Upload Response: $responseBody");
+
+      if (response.statusCode != 200) {
+        throw Exception("Upload failed");
+      }
+
+      final data = jsonDecode(responseBody);
+
+      if (data['status'] == true) {
+        return data['url'];
+      }
+
+      throw Exception(data['message'] ?? "Upload failed");
+
+    } catch (e) {
+      debugPrint("❌ Upload error: $e");
+      return null;
+    }
   }
-
   void deletePhoto() {
     setState(() {
       photo = null;
@@ -736,7 +752,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                       ? InkWell(
                           onTap: () async {
                             final imageUrl = await pickImagePhoto1(
-                              ImageSource.camera,
+                              ImageSource.gallery,
                             );
                             print("Uploaded Image URL: $imageUrl");
                           },

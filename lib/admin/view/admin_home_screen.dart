@@ -100,48 +100,69 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int reportFilled = 0;
   int reportNotFilled = 0;
   List reportList = [];
+  DateTime selectedDate = DateTime.now();
 
   int presentCount = 0;
   int absentCount = 0;
-  Future<void> fetchAttendance() async {
+  int holidayCount = 0;
+  Future<void> fetchAttendance({DateTime? date}) async {
     try {
+      final DateTime attendanceDate = date ?? selectedDate;
+
+      final String formattedDate = formatDate(attendanceDate);
+
+      debugPrint("Fetching attendance for: $formattedDate");
+
       final response = await http.post(
-        Uri.parse("http://15.206.209.30/attendance/attedance_chart.php"),
+        Uri.parse(
+          "http://15.206.209.30/attendance/attedance_chart.php",
+        ),
         body: {
           "cid": widget.cid,
-          "date": formatDate(DateTime.now()),
+          "date": formattedDate,
         },
       );
 
-      print(response.body);
+      debugPrint("Attendance Response: ${response.body}");
 
       final jsonData = jsonDecode(response.body);
 
       int present = 0;
       int absent = 0;
+      int holiday = 0;
 
       if (jsonData['status'] == true &&
           jsonData['data'] != null &&
           jsonData['data'] is List) {
 
         for (var item in jsonData['data']) {
+          final String status =
+              item['attendance_status']
+                  ?.toString()
+                  .trim()
+                  .toUpperCase() ??
+                  "";
 
-          String status = item['attendance_status']
-              .toString()
-              .trim()
-              .toUpperCase();
+          debugPrint("User Status: $status");
 
           if (status == "PRESENT") {
             present++;
-          } else {
+          } else if (status == "HOLYDAY") {
+            holiday++;
+          } else if (status == "ABSENT") {
             absent++;
           }
         }
       }
 
+      if (!mounted) return;
+
       setState(() {
+        selectedDate = attendanceDate;
+
         presentCount = present;
         absentCount = absent;
+        holidayCount = holiday;
       });
 
     } catch (e) {
@@ -217,7 +238,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   Widget attendanceChart() {
-    int total = presentCount + absentCount;
+    int total = presentCount + absentCount + holidayCount;
 
     return Card(
       elevation: 4,
@@ -235,44 +256,91 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            const Text(
-              "📊 Today's Attendance ",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                 Text(
+                  "📊 Today's Attendance ",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(width: 40,),
+                IconButton(
+                  onPressed: () async {
+                    final DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now(),
+                    );
+                    if (pickedDate != null) {
+                      await fetchAttendance(
+                        date: pickedDate,
+                      );
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.calendar_month,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 10),
 
             SizedBox(
               height: 200,
-              child: total == 0
-                  ? const Center(child: Text("No Data"))
+              child: (presentCount + absentCount + holidayCount) == 0
+                  ? const Center(
+                child: Text("No Data"),
+              )
                   : PieChart(
                 PieChartData(
                   centerSpaceRadius: 40,
                   sections: [
-                    PieChartSectionData(
-                      value: presentCount.toDouble(),
-                      color: Colors.green,
-                      title: "$presentCount",
-                      titleStyle: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                      radius: 70,
-                    ),
-                    PieChartSectionData(
-                      value: absentCount.toDouble(),
-                      color: Colors.red,
-                      title: "$absentCount",
-                      titleStyle: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                      radius: 70,
-                    ),
+
+                    // PRESENT
+                    if (presentCount > 0)
+                      PieChartSectionData(
+                        value: presentCount.toDouble(),
+                        color: Colors.green,
+                        title: "$presentCount",
+                        titleStyle: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        radius: 70,
+                      ),
+
+                    // ABSENT
+                    if (absentCount > 0)
+                      PieChartSectionData(
+                        value: absentCount.toDouble(),
+                        color: Colors.red,
+                        title: "$absentCount",
+                        titleStyle: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        radius: 70,
+                      ),
+
+                    // HOLIDAY
+                    if (holidayCount > 0)
+                      PieChartSectionData(
+                        value: holidayCount.toDouble(),
+                        color: Colors.orange,
+                        title: "$holidayCount",
+                        titleStyle: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        radius: 70,
+                      ),
                   ],
                 ),
               ),
@@ -283,14 +351,23 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+
                 Text(
                   "🟢 Present: $presentCount",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 Text(
                   "🔴 Absent: $absentCount",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                Text(
+                  "🟠 WO: $holidayCount",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
@@ -1156,7 +1233,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5), // Perfect square corners
                 ),
-              ),child: Text("📍 Kiosk Analytics",
+              ),child: Text("📍 Branch Analytics",
                 style: TextStyle(color: Color(0xff1D4ED8),fontFamily: 'impact',fontSize: 14),
               )),
           SizedBox(

@@ -354,7 +354,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
         backgroundColor: Colors.blue,
         iconTheme: IconThemeData(color: Colors.white),
         title: const Text(
-          "Add Employee",
+          "Create New Employee",
           style: TextStyle(color: Colors.white, fontSize: 18),
         ),
       ),

@@ -542,7 +542,7 @@ NotificationService notificationService=NotificationService();
                       const SizedBox(height: 15),
 
                       Text(
-                        "Version 1.1.1",
+                        "Version 1.0.2",
                         style: TextStyle(
                           color: Colors.grey.shade600,
                         ),

@@ -724,7 +724,7 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
         ),
         backgroundColor: Colors.blue,
         iconTheme: IconThemeData(color: Colors.white),
-        title: const Text("View Employees",style: TextStyle(color: Colors.white),),
+        title: const Text("All Employees",style: TextStyle(color: Colors.white),),
         actions: [
           IconButton(onPressed: (){
             //download the excel file

@@ -762,7 +762,7 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
         ),
           backgroundColor: Colors.blue,
           iconTheme: IconThemeData(color: Colors.white),
-          title: const Text("Employee Management",style: TextStyle(color: Colors.white),),
+          title: const Text("Employee Management- (Active Employee)",style: TextStyle(color: Colors.white),),
       actions: [
         ElevatedButton(onPressed: (){
           Get.to(()=>InactiveUserScreen(cid: widget.cid,));
@@ -770,7 +770,7 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5), // Perfect square corners
           ),
-        ),child: Text("View Employees")),
+        ),child: Text("All Employees")),
         SizedBox(
           width: 10,
         ),
@@ -780,7 +780,7 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5), // Perfect square corners
           ),
-        ),child: Text("Add Employee")),
+        ),child: Text("Create Employee")),
         SizedBox(width: 10,),
         IconButton(onPressed: (){
           //download the excel file

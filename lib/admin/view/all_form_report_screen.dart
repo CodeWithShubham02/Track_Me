@@ -258,10 +258,11 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
         TextCellValue(row.contactNo),
         TextCellValue(address),
         TextCellValue(row.kioskName),
-        TextCellValue("Not Found Application"),
-        TextCellValue(
-          DateFormat('yyyy-MM-dd').format(DateTime.parse(row.createdAt)),
-        ),
+        TextCellValue(" "),
+        TextCellValue(" "),
+        // TextCellValue(
+        //   DateFormat('yyyy-MM-dd').format(DateTime.parse(row.createdAt)),
+        // ),
       ]);
     }
 
@@ -434,8 +435,10 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                 ),
               ),
               SizedBox(height: 10,),
+              SizedBox(height: 10,),
               DropdownButtonFormField<String>(
-                value: selectedRelationListRemark,
+                initialValue: report.relation,
+                value: selectedRelationListRemark, //yha par selected ho after click show the dropdown report.relation
                 decoration: const InputDecoration(
                   labelText: "Relation",
                   border: OutlineInputBorder(),
@@ -457,6 +460,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
               SizedBox(height: 10,),
               SizedBox(height: 10,),
               DropdownButtonFormField<String>(
+                initialValue: report.variant,
                 value: selectedVariantListRemark,
                 decoration: const InputDecoration(
                   labelText: "Variant",
@@ -479,6 +483,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
               SizedBox(height: 10,),
               SizedBox(height: 10,),
               DropdownButtonFormField<String>(
+                initialValue: report.status,
                 value: selectedStatusRemark,
                 decoration: const InputDecoration(
                   labelText: "Status",
@@ -499,6 +504,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                 },
               ),
               SizedBox(height: 10,),
+              SizedBox(height: 10,),
               TextField(
                 controller: remarksController,
                 decoration: const InputDecoration(labelText: "Remarks"),
@@ -509,38 +515,50 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                 decoration: const InputDecoration(labelText: "Manager Remark"),
               ),
               const SizedBox(height: 15),
-              ElevatedButton(
-                onPressed: () async {
-                  bool success = await ReportController.updateFormDetails(
-                    id: report.id,
-                    applicationNo: applicationController.text,
-                    relation: relationController.text,
-                    variant: variantController.text,
-                    status: statusController.text,
-                    remarks: remarksController.text,
-                    managerRemark: managerRemark.text,
-                  );
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      Get.back();
+                    },
+                    child: const Text("Cancel"),
+                  ),
+                  SizedBox(width: 50,),
+                  ElevatedButton(
+                    onPressed: () async {
+                      bool success = await ReportController.updateFormDetails(
+                        id: report.id,
+                        applicationNo: applicationController.text,
+                        relation: relationController.text,
+                        variant: variantController.text,
+                        status: statusController.text,
+                        remarks: remarksController.text,
+                        managerRemark: managerRemark.text,
+                      );
 
-                  if (success) {
-                    Get.back(); // close dialog
+                      if (success) {
+                        Get.back(); // close dialog
 
-                    setState(() {
-                      reportsFuture = ReportController.fetchReports(widget.cid);
-                    });
-                    Get.snackbar(
-                      "Success updated...",
-                      "Successfully updated manager remark...",
-                      snackPosition: SnackPosition.BOTTOM,
-                    );
-                  } else {
-                    Get.snackbar(
-                      "Error",
-                      "Update failed",
-                      snackPosition: SnackPosition.BOTTOM,
-                    );
-                  }
-                },
-                child: const Text("Update"),
+                        setState(() {
+                          reportsFuture = ReportController.fetchReports(widget.cid);
+                        });
+                        Get.snackbar(
+                          "Success updated...",
+                          "Successfully updated manager remark...",
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      } else {
+                        Get.snackbar(
+                          "Error",
+                          "Update failed",
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      }
+                    },
+                    child: const Text("Update"),
+                  ),
+
+                ],
               ),
             ],
           ),
@@ -598,44 +616,127 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
   }
 
   void _showUserFilter() {
-    List<String> users = allReports.map((e) => e.userName).toSet().toList();
+    List<String> users =
+    allReports.map((e) => e.userName).toSet().toList();
+
+    users.sort();
 
     showDialog(
       context: context,
       builder: (_) {
-        return AlertDialog(
-          title: const Text("Filter by User Name"),
-          content: SizedBox(
-            width: 250,
-            height: 300,
-            child: ListView.builder(
-              itemCount: users.length,
-              itemBuilder: (context, index) {
-                String name = users[index];
+        String searchText = "";
 
-                return ListTile(
-                  title: Text(name),
-                  onTap: () {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            // Search ke according users filter
+            final filteredUsers = users.where((name) {
+              return name.toLowerCase().contains(
+                searchText.toLowerCase(),
+              );
+            }).toList();
+
+            return AlertDialog(
+              title: const Text("Filter by User Name"),
+
+              content: SizedBox(
+                width: 300,
+                height: 400,
+                child: Column(
+                  children: [
+                    // 🔍 Search Box
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: "Search user name...",
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: searchText.isNotEmpty
+                            ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            setDialogState(() {
+                              searchText = "";
+                            });
+                          },
+                        )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setDialogState(() {
+                          searchText = value;
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // 👤 User List
+                    Expanded(
+                      child: filteredUsers.isEmpty
+                          ? const Center(
+                        child: Text(
+                          "No user found",
+                          style: TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                          : ListView.builder(
+                        itemCount: filteredUsers.length,
+                        itemBuilder: (context, index) {
+                          final name = filteredUsers[index];
+
+                          return ListTile(
+                            leading: const CircleAvatar(
+                              child: Icon(Icons.person),
+                            ),
+                            title: Text(name),
+                            trailing: selectedUserName == name
+                                ? const Icon(
+                              Icons.check,
+                              color: Colors.green,
+                            )
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                selectedUserName = name;
+                                currentPage = 0;
+                              });
+
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Bottom Actions
+              actions: [
+                TextButton(
+                  onPressed: () {
                     setState(() {
-                      selectedUserName = name;
+                      selectedUserName = "";
+                      currentPage = 0;
                     });
+
                     Navigator.pop(context);
                   },
-                );
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  selectedUserName = "";
-                });
-                Navigator.pop(context);
-              },
-              child: const Text("Clear Filter"),
-            ),
-          ],
+                  child: const Text("Clear Filter"),
+                ),
+
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Cancel"),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -759,6 +860,16 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
     }
   }
   //upload mai file
+//search box
+  final TextEditingController applicationSearchController =
+  TextEditingController();
+  @override
+  void dispose() {
+    applicationSearchController.dispose();
+    _verticalController.dispose();
+    _horizontalController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -935,14 +1046,28 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
 
           allReports = snapshot.data!;
 
+          final applicationSearch =
+          applicationSearchController.text.trim().toLowerCase();
+
           final reports = allReports.where((e) {
-            bool cityMatch = selectedCity.isEmpty || e.siteName == selectedCity;
-            bool userMatch = selectedUserName.isEmpty || e.userName == selectedUserName;
-            bool statusMatch = selectedStatus.isEmpty || e.status == selectedStatus;
+            final cityMatch =
+                selectedCity.isEmpty || e.siteName == selectedCity;
 
-            return cityMatch && userMatch && statusMatch;
+            final userMatch =
+                selectedUserName.isEmpty || e.userName == selectedUserName;
+
+            final statusMatch =
+                selectedStatus.isEmpty || e.status == selectedStatus;
+
+            final applicationMatch =
+                applicationSearch.isEmpty ||
+                    e.applicationNo.toLowerCase().contains(applicationSearch);
+
+            return cityMatch &&
+                userMatch &&
+                statusMatch &&
+                applicationMatch;
           }).toList();
-
           // 👉 PAGINATION LOGIC
           final paginatedReports = reports
               .skip(currentPage * rowsPerPage)
@@ -953,6 +1078,47 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
             padding: const EdgeInsets.all(10),
             child: Column(
               children: [
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: TextField(
+                    controller: applicationSearchController,
+                    onChanged: (value) {
+                      setState(() {
+                        currentPage = 0;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Search Application Number",
+                      labelText: "Application Number",
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Color(0xff2563EB),
+                      ),
+                      suffixIcon: applicationSearchController.text.isNotEmpty
+                          ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          applicationSearchController.clear();
+
+                          setState(() {
+                            currentPage = 0;
+                          });
+                        },
+                      )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: Color(0xff2563EB),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: Scrollbar(
                       controller: _verticalController,
@@ -1238,19 +1404,30 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                   children: [
                     ElevatedButton(
                       onPressed: currentPage > 0
-                          ? () => setState(() => currentPage--)
+                          ? () {
+                        setState(() {
+                          currentPage--;
+                        });
+                      }
                           : null,
                       child: const Text("Previous"),
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      "Page ${currentPage + 1} of ${(allReports.length / rowsPerPage).ceil()}",
+                      "Page ${currentPage + 1} of "
+                          "${(reports.length / rowsPerPage).ceil() == 0
+                          ? 1
+                          : (reports.length / rowsPerPage).ceil()}",
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
                       onPressed:
-                      (currentPage + 1) * rowsPerPage < allReports.length
-                          ? () => setState(() => currentPage++)
+                      (currentPage + 1) * rowsPerPage < reports.length
+                          ? () {
+                        setState(() {
+                          currentPage++;
+                        });
+                      }
                           : null,
                       child: const Text("Next"),
                     ),

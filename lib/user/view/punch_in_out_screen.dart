@@ -672,7 +672,12 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
     await prefs.setString('uid', widget.userModel.uid);
     await prefs.setString('cid', widget.userModel.cid);
 
+    final punchInTime = DateTime.now();
 
+    await prefs.setString(
+      'punch_in_time',
+      punchInTime.toIso8601String(),
+    );
     print("Attendance ID saved: $attendanceId");
     print(data);
     debugPrint("Attendance ID: $attendanceId");

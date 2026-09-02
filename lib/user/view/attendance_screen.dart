@@ -194,7 +194,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             padding: const EdgeInsets.symmetric(vertical: 1,horizontal: 10),
             child: SingleChildScrollView(
               child: Container(
-                height: 550,
+                height: MediaQuery.sizeOf(context).height/1.3,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade400),
                   borderRadius: BorderRadius.circular(8),
@@ -257,8 +257,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         ),
                       ),
 
-                      // row("Working Hours", Text(workingHours())),
-                      // row("Total break Time", Text(attendanceData?['totalBreakMinutes']?.toString() ?? "-")),
+                      row("Working Hours", Text(workingHours())),
+                      //row("Total break Time", Text(attendanceData?['totalBreakMinutes']?.toString() ?? "-")),
                     ],
                   ),
                 ),

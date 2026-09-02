@@ -772,11 +772,64 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
 
   /* ---------------- ATTENDANCE ID ---------------- */
 
+/* ---------------- ATTENDANCE ID ---------------- */
+//get attendance id
+  Timer? _attendanceTimer;
+  Duration _attendanceDuration = Duration.zero;
+
+  DateTime? _punchInTime;
   Future<void> loadAttendanceId() async {
     final prefs = await SharedPreferences.getInstance();
+
     attendanceId = prefs.getString('attendance_id');
-    if (mounted) setState(() {});
+
+    final punchInString = prefs.getString('punch_in_time');
+
+    if (punchInString != null && punchInString.isNotEmpty) {
+      _punchInTime = DateTime.tryParse(punchInString);
+    }
+
+    if (attendanceId != null && _punchInTime != null) {
+      _startAttendanceTimer();
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
   }
+
+  void _startAttendanceTimer() async{
+    _attendanceTimer?.cancel();
+
+    if (_punchInTime == null) return;
+
+    _attendanceDuration = DateTime.now().difference(_punchInTime!);
+
+    _attendanceTimer = Timer.periodic(
+      const Duration(seconds: 1),
+          (timer) {
+        if (!mounted) return;
+
+        setState(() {
+          _attendanceDuration =
+              DateTime.now().difference(_punchInTime!);
+
+        });
+      },
+    );
+  }
+  String formatDuration(Duration duration) {
+    final hours = duration.inHours.toString().padLeft(2, '0');
+    final minutes =
+    (duration.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds =
+    (duration.inSeconds % 60).toString().padLeft(2, '0');
+
+    return "$hours:$minutes:$seconds";
+  }
+
+
+
   /* ---------------- LOGOUT ---------------- */
   Future<void> showLogoutDialog(BuildContext context) async {
     showDialog(
@@ -1499,7 +1552,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   ),
                 ),
                 Text(
-                  "1.1.1",
+                  "1.0.2",
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.normal,
@@ -1908,6 +1961,16 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
               "${convertTo12Hour(widget.userModel.shiftStart)} - "
                   "${convertTo12Hour(widget.userModel.shiftEnd)}",
             ),
+            if (attendanceId != null) ...[
+              tableRow(
+                "Date & Time",
+                DateFormat('dd MMM yy, hh:mm:ss a').format(DateTime.now()),
+              ),
+              tableRow(
+                "Duration",
+                formatDuration(_attendanceDuration),
+              ),
+            ],
 
             // More button row
             TableRow(

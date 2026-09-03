@@ -1160,7 +1160,7 @@ class _AssignHolidayScreenState
           ),
         ),
         title: const Text(
-          "Work Schedule",
+          "Roster Upload",
           style: TextStyle(
             fontSize: 18,
             color: Colors.white,
@@ -1186,7 +1186,7 @@ class _AssignHolidayScreenState
                 // ==================================================
 
                 Image.asset(
-                  "assets/image/rosterimg.JPG",
+                  "assets/image/img_4.png",
                 ),
 
                 const SizedBox(height: 15),

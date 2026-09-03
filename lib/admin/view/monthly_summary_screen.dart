@@ -207,75 +207,139 @@ class _AttendanceSummaryScreenState extends State<AttendanceSummaryScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text("Select Options"),
-          content: SizedBox(
-            width: 300,
-            height: 400,
-            child: Column(
-              children: [
-                CheckboxListTile(
-                  title: Text("Select All"),
-                  value: tempSelected.length == items.length,
-                  onChanged: (val) {
-                    if (val == true) {
-                      tempSelected.addAll(items);
-                    } else {
-                      tempSelected.clear();
-                    }
-                    setState(() {});
-                    Navigator.pop(context);
-                    showMultiSelectFilter(
-                      items: items,
-                      selectedValues: tempSelected,
-                      onApply: onApply,
-                    );
-                  },
-                ),
-                Expanded(
-                  child: ListView(
-                    children: items.map((item) {
-                      return CheckboxListTile(
-                        title: Text(item),
-                        value: tempSelected.contains(item),
-                        onChanged: (val) {
+        String searchText = "";
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            // 🔍 Search ke according items filter
+            final filteredItems = items.where((item) {
+              return item.toLowerCase().contains(
+                searchText.toLowerCase(),
+              );
+            }).toList();
+
+            return AlertDialog(
+              title: const Text("Select Options"),
+
+              content: SizedBox(
+                width: 300,
+                height: 450,
+                child: Column(
+                  children: [
+                    // 🔍 Search Box
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: "Search options...",
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: searchText.isNotEmpty
+                            ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            setDialogState(() {
+                              searchText = "";
+                            });
+                          },
+                        )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setDialogState(() {
+                          searchText = value;
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // ☑ Select All
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text(
+                        "Select All",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      value: tempSelected.length == items.length &&
+                          items.isNotEmpty,
+                      onChanged: (val) {
+                        setDialogState(() {
                           if (val == true) {
-                            tempSelected.add(item);
+                            tempSelected.addAll(items);
                           } else {
-                            tempSelected.remove(item);
+                            tempSelected.clear();
                           }
-                          setState(() {});
-                          Navigator.pop(context);
-                          showMultiSelectFilter(
-                            items: items,
-                            selectedValues: tempSelected,
-                            onApply: onApply,
+                        });
+                      },
+                    ),
+
+                    const Divider(),
+
+                    // 📋 Filtered Items
+                    Expanded(
+                      child: filteredItems.isEmpty
+                          ? const Center(
+                        child: Text(
+                          "No options found",
+                          style: TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                          : ListView(
+                        children: filteredItems.map((item) {
+                          return CheckboxListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(item),
+                            value: tempSelected.contains(item),
+                            onChanged: (val) {
+                              setDialogState(() {
+                                if (val == true) {
+                                  tempSelected.add(item);
+                                } else {
+                                  tempSelected.remove(item);
+                                }
+                              });
+                            },
                           );
-                        },
-                      );
-                    }).toList(),
-                  ),
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Buttons
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    tempSelected.clear();
+
+                    onApply(
+                      Set<String>.from(tempSelected),
+                    );
+
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Clear"),
+                ),
+
+                ElevatedButton(
+                  onPressed: () {
+                    onApply(
+                      Set<String>.from(tempSelected),
+                    );
+
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Apply"),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                tempSelected.clear();
-                onApply(tempSelected);
-                Navigator.pop(context);
-              },
-              child: Text("Clear"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                onApply(tempSelected);
-                Navigator.pop(context);
-              },
-              child: Text("Apply"),
-            ),
-          ],
+            );
+          },
         );
       },
     );

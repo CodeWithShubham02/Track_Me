@@ -15,6 +15,14 @@ import 'package:universal_html/html.dart' as html;
 import 'package:url_launcher/url_launcher.dart';
 import '../controller/form_reports_controller.dart';
 import 'duplicate_form_screen.dart';
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:geocoding/geocoding.dart';
+
+
 
 class AllFormReportScreen extends StatefulWidget {
   final String cid;
@@ -42,46 +50,152 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
   }
   int rowsPerPage = 10;
   int currentPage = 0;
-  void _showImageDialog(BuildContext context, String imageUrl) {
+  void _showImagesDialog(
+      BuildContext context,
+      List<String> imageUrls,
+      ) {
     showDialog(
       context: context,
-      barrierDismissible: true,
-      builder: (_) {
+      builder: (context) {
         return Dialog(
-          insetPadding: EdgeInsets.zero, // 🔥 full screen
-          backgroundColor: Colors.black,
-          child: Stack(
-            children: [
-              // 🔍 Zoomable image
-              InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 5.0,
-                child: Center(
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
+          child: Container(
+            width: 700,
+            height: 600,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Images (${imageUrls.length})",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    IconButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+
+                const Divider(),
+
+                // Images
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(8),
+                    gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: imageUrls.length,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          _showFullImage(
+                            context,
+                            imageUrls[index],
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius:
+                          BorderRadius.circular(10),
+                          child: Image.network(
+                            imageUrls[index],
+                            fit: BoxFit.cover,
+                            loadingBuilder:
+                                (context, child, progress) {
+                              if (progress == null) {
+                                return child;
+                              }
+
+                              return const Center(
+                                child:
+                                CircularProgressIndicator(),
+                              );
+                            },
+                            errorBuilder:
+                                (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey.shade200,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.broken_image,
+                                    size: 40,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       );
                     },
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.broken_image,
-                      color: Colors.white,
-                      size: 80,
-                    ),
                   ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  void _showFullImage(
+      BuildContext context,
+      String imageUrl,
+      ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.black,
+          insetPadding: const EdgeInsets.all(20),
+          child: Stack(
+            children: [
+              InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  width: double.infinity,
+                  height: 700,
+                  errorBuilder:
+                      (context, error, stackTrace) {
+                    return const Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Colors.white,
+                        size: 60,
+                      ),
+                    );
+                  },
                 ),
               ),
 
-              // ❌ Close button
               Positioned(
-                top: 30,
-                right: 20,
+                top: 5,
+                right: 5,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 30,
+                  ),
                 ),
               ),
             ],
@@ -90,7 +204,6 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
       },
     );
   }
-
   Future<void> _confirmAndUpdateDuplicate(ClientFormReportModel report) async {
     bool confirmed =
         await showDialog<bool>(
@@ -828,35 +941,189 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
       },
     );
   }
+  final Map<String, String> addressCache = {};
   Future<String> getAddressCached(String gps) async {
+    try {
+      if (gps.trim().isEmpty) {
+        return "Address not found";
+      }
+
+      // =========================
+      // GPS PARSE
+      // =========================
+
+      final parts = gps.split(',');
+
+      if (parts.length < 2) {
+        return "Invalid GPS";
+      }
+
+      final lat = double.tryParse(parts[0].trim());
+      final lng = double.tryParse(parts[1].trim());
+
+      if (lat == null || lng == null) {
+        return "Invalid GPS";
+      }
+
+      final key = "$lat,$lng";
+
+      debugPrint("Getting address for: $lat, $lng");
+
+      // =========================
+      // CACHE CHECK
+      // =========================
+
+      if (addressCache.containsKey(key)) {
+        debugPrint("✅ Address found in cache");
+
+        return addressCache[key]!;
+      }
+
+      String address = "Address not found";
+
+      // =========================
+      // WEB
+      // =========================
+
+      if (kIsWeb) {
+        const googleApiKey =
+            "AIzaSyBF7OlUqnsWTXRMiwtwEk9ieQ4YkzIhq18";
+
+        final url =
+            "https://maps.googleapis.com/maps/api/geocode/json"
+            "?latlng=$lat,$lng"
+            "&key=$googleApiKey";
+
+        debugPrint("🌐 Calling Google Geocoding API");
+
+        final response = await http.get(
+          Uri.parse(url),
+        );
+
+        debugPrint(
+          "Geocoding Status Code: ${response.statusCode}",
+        );
+
+        if (response.statusCode == 200) {
+          final responseData = jsonDecode(response.body);
+
+          if (responseData['status'] == 'OK' &&
+              responseData['results'] != null &&
+              responseData['results'].isNotEmpty) {
+
+            address =
+                responseData['results'][0]['formatted_address']
+                    ?.toString() ??
+                    "Address not found";
+          } else {
+            debugPrint(
+              "❌ Google Geocoding Status: "
+                  "${responseData['status']}",
+            );
+
+            address = "Address not found";
+          }
+        } else {
+          debugPrint(
+            "❌ HTTP Error: ${response.statusCode}",
+          );
+
+          address = "Address not found";
+        }
+      }
+
+      // =========================
+      // ANDROID / IOS
+      // =========================
+
+      else {
+        debugPrint("📱 Using native geocoding");
+
+        final List<Placemark> placemarks =
+        await placemarkFromCoordinates(
+          lat,
+          lng,
+        );
+
+        if (placemarks.isNotEmpty) {
+          final place = placemarks.first;
+
+          final addressParts = <String>[
+            if (place.name?.trim().isNotEmpty == true)
+              place.name!.trim(),
+
+            if (place.street?.trim().isNotEmpty == true)
+              place.street!.trim(),
+
+            if (place.subLocality?.trim().isNotEmpty == true)
+              place.subLocality!.trim(),
+
+            if (place.locality?.trim().isNotEmpty == true)
+              place.locality!.trim(),
+
+            if (place.subAdministrativeArea
+                ?.trim()
+                .isNotEmpty ==
+                true)
+              place.subAdministrativeArea!.trim(),
+
+            if (place.administrativeArea?.trim().isNotEmpty == true)
+              place.administrativeArea!.trim(),
+
+            if (place.postalCode?.trim().isNotEmpty == true)
+              place.postalCode!.trim(),
+
+            if (place.country?.trim().isNotEmpty == true)
+              place.country!.trim(),
+          ];
+
+          if (addressParts.isNotEmpty) {
+            address = addressParts.join(", ");
+          }
+        }
+      }
+
+      // =========================
+      // SAVE CACHE
+      // =========================
+
+      addressCache[key] = address;
+
+      debugPrint("✅ Address: $address");
+
+      return address;
+    } catch (e, stackTrace) {
+      debugPrint(
+        "❌ Reverse Geocoding Error: $e",
+      );
+
+      debugPrint("$stackTrace");
+
+      return "Address not found";
+    }
+  }
+  String formatGpsLocation(String gps) {
     try {
       final parts = gps.split(',');
 
-      double lat = double.parse(parts[0].trim());
-      double lng = double.parse(parts[1].trim());
+      if (parts.length < 2) {
+        return "Invalid location";
+      }
 
-      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+      final lat = double.tryParse(parts[0].trim());
+      final lng = double.tryParse(parts[1].trim());
 
-      if (placemarks.isEmpty) return gps;
+      if (lat == null || lng == null) {
+        return "Invalid location";
+      }
 
-      Placemark place = placemarks.first;
+      final latDirection = lat >= 0 ? "N" : "S";
+      final lngDirection = lng >= 0 ? "E" : "W";
 
-      List<String> addressParts = [
-        place.name ?? "",
-        place.street ?? "",
-        place.subLocality ?? "",
-        place.locality ?? "",
-        place.administrativeArea ?? "",
-        place.postalCode ?? "",
-        place.country ?? "",
-      ];
-
-      // Remove empty values
-      addressParts.removeWhere((e) => e.trim().isEmpty);
-
-      return addressParts.join(", ");
+      return "${lat.abs().toStringAsFixed(6)}° $latDirection, "
+          "${lng.abs().toStringAsFixed(6)}° $lngDirection";
     } catch (e) {
-      return gps;
+      return "Invalid location";
     }
   }
   //upload mai file
@@ -1079,6 +1346,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
             child: Column(
               children: [
                 Container(
+                  width: 400,
                   margin: const EdgeInsets.only(bottom: 10),
                   child: TextField(
                     controller: applicationSearchController,
@@ -1319,56 +1587,78 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                     // 🔥 Multiple Images
                                     DataCell(
                                       report.imageUrls.isNotEmpty
-                                          ? SizedBox(
-                                              width: 150,
-                                              child: ListView.builder(
-                                                scrollDirection: Axis.horizontal,
-                                                itemCount: report.imageUrls.length,
-                                                itemBuilder: (context, index) {
-                                                  return Padding(
-                                                    padding: const EdgeInsets.only(
-                                                      right: 6,
-                                                    ),
-                                                    child: ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(6),
-                                                      child: InkWell(
-                                                        onTap: () {
-                                                          _showImageDialog(
-                                                            context,
-                                                            report.imageUrls[index],
-                                                          );
-                                                        },
-                                                        child: Image.network(
-                                                          report.imageUrls[index],
-                                                          width: 50,
-                                                          height: 50,
-                                                          fit: BoxFit.cover,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            )
-                                          : const Icon(Icons.image_not_supported),
+                                          ? ElevatedButton.icon(
+                                        onPressed: () {
+                                          _showImagesDialog(
+                                            context,
+                                            report.imageUrls,
+                                          );
+                                        },
+                                        icon: const Icon(
+                                          Icons.image,
+                                          size: 18,
+                                        ),
+                                        label: const Text("View Image"),
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 8,
+                                          ),
+                                        ),
+                                      )
+                                          : const Text(
+                                        "No Image",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
                                     ),
 
                                     DataCell(
                                       FutureBuilder<String>(
-                                future: getAddressCached(report.gpsLocation),
+                                        future: getAddressCached(report.gpsLocation),
                                         builder: (context, snapshot) {
-                                          if (snapshot.connectionState ==
-                                              ConnectionState.waiting) {
-                                            return const Text("Loading...");
+                                          if (snapshot.connectionState == ConnectionState.waiting) {
+                                            return const SizedBox(
+                                              width: 250,
+                                              child: Text(
+                                                "Loading address...",
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            );
+                                          }
+
+                                          if (snapshot.hasError) {
+                                            return const SizedBox(
+                                              width: 250,
+                                              child: Text(
+                                                "Address not found",
+                                                style: TextStyle(fontSize: 12),
+                                              ),
+                                            );
+                                          }
+
+                                          final address = snapshot.data;
+
+                                          if (address == null || address.trim().isEmpty) {
+                                            return const SizedBox(
+                                              width: 250,
+                                              child: Text("Address not found"),
+                                            );
                                           }
 
                                           return SizedBox(
-                                            width: 200,
+                                            width: 250,
                                             child: Text(
-                                              snapshot.data ?? "Address not found",
-                                              maxLines: 2,
+                                              address,
+                                              maxLines: 3,
                                               overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                              ),
                                             ),
                                           );
                                         },

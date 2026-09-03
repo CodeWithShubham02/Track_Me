@@ -534,44 +534,130 @@ class _MonthlyAttendanceScreenState extends State<MonthlyAttendanceScreen> {
     required List<String> options,
     required Set<String> selectedValues,
   }) {
+    String searchText = "";
+
     Get.defaultDialog(
       title: "Filter $title",
-      content: SizedBox(
-        width: 300,
-        height: 400,
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                children: options.map((value) {
-                  return CheckboxListTile(
-                    value: selectedValues.contains(value),
-                    title: Text(
-                      value == 'HOLYDAY' ? 'WO' : value,
+      content: StatefulBuilder(
+        builder: (context, setDialogState) {
+          // Search ke according options filter
+          final filteredOptions = options.where((value) {
+            return value
+                .toLowerCase()
+                .contains(searchText.toLowerCase());
+          }).toList();
+
+          return SizedBox(
+            width: 300,
+            height: 450,
+            child: Column(
+              children: [
+                // 🔍 Search Box
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: "Search $title...",
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: searchText.isNotEmpty
+                        ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        setDialogState(() {
+                          searchText = "";
+                        });
+                      },
+                    )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    onChanged: (checked) {
-                      if (checked == true) {
-                        selectedValues.add(value);
-                      } else {
-                        selectedValues.remove(value);
-                      }
-                      applyFilters();
-                      Navigator.pop(context);
-                    },
-                  );
-                }).toList(),
-              ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                  ),
+                  onChanged: (value) {
+                    setDialogState(() {
+                      searchText = value;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
+                // 📋 Filter Options
+                Expanded(
+                  child: filteredOptions.isEmpty
+                      ? const Center(
+                    child: Text(
+                      "No results found",
+                      style: TextStyle(
+                        color: Colors.grey,
+                      ),
+                    ),
+                  )
+                      : ListView(
+                    children: filteredOptions.map((value) {
+                      return CheckboxListTile(
+                        dense: true,
+                        value: selectedValues.contains(value),
+                        title: Text(
+                          value == 'HOLYDAY'
+                              ? 'WO'
+                              : value,
+                        ),
+                        onChanged: (checked) {
+                          setDialogState(() {
+                            if (checked == true) {
+                              selectedValues.add(value);
+                            } else {
+                              selectedValues.remove(value);
+                            }
+                          });
+
+                          // ❌ Yahan Navigator.pop mat karein
+                          // Multiple selection ke liye dialog open rahega.
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Reset
+                    TextButton(
+                      onPressed: () {
+                        setDialogState(() {
+                          selectedValues.clear();
+                          searchText = "";
+                        });
+
+                        applyFilters();
+
+                        Get.back();
+                      },
+                      child: const Text("Reset Filter"),
+                    ),
+
+                    // Apply
+                    ElevatedButton(
+                      onPressed: () {
+                        applyFilters();
+
+                        Get.back();
+                      },
+                      child: const Text("Apply"),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                selectedValues.clear();
-                applyFilters();
-                Navigator.pop(context);
-              },
-              child: const Text("Reset Filter"),
-            )
-          ],
-        ),
+          );
+        },
       ),
     );
   }

@@ -376,19 +376,72 @@ class _AllEmployeeAttendanceScreenState
     showDialog(
       context: context,
       builder: (_) {
+        String searchText = "";
+
         return StatefulBuilder(
           builder: (context, setStateDialog) {
+            // Search ke according options filter honge
+            final filteredOptions = options.where((value) {
+              return value.toLowerCase().contains(
+                searchText.toLowerCase(),
+              );
+            }).toList();
+
             return AlertDialog(
               title: Text("Filter $title"),
+
               content: SizedBox(
                 width: 300,
-                height: 400,
+                height: 450,
                 child: Column(
                   children: [
+                    // 🔍 Search Box
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: "Search $title...",
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: searchText.isNotEmpty
+                            ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            setStateDialog(() {
+                              searchText = "";
+                            });
+                          },
+                        )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setStateDialog(() {
+                          searchText = value;
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Options
                     Expanded(
-                      child: ListView(
-                        children: options.map((value) {
+                      child: filteredOptions.isEmpty
+                          ? const Center(
+                        child: Text(
+                          "No results found",
+                          style: TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                          : ListView(
+                        children: filteredOptions.map((value) {
                           return CheckboxListTile(
+                            dense: true,
                             value: selectedValues.contains(value),
                             title: Text(value),
                             onChanged: (checked) {
@@ -404,20 +457,30 @@ class _AllEmployeeAttendanceScreenState
                         }).toList(),
                       ),
                     ),
+
+                    const SizedBox(height: 8),
+
+                    // Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         TextButton(
                           onPressed: () {
-                            selectedValues.clear();
+                            setState(() {
+                              selectedValues.clear();
+                            });
+
                             applyFilters();
+
                             Navigator.pop(context);
                           },
                           child: const Text("Reset"),
                         ),
+
                         ElevatedButton(
                           onPressed: () {
                             applyFilters();
+
                             Navigator.pop(context);
                           },
                           child: const Text("Apply"),
@@ -518,19 +581,19 @@ class _AllEmployeeAttendanceScreenState
           //   child: Text("Add WO"),
           // ),
           SizedBox(width: 10),
-          ElevatedButton(
-            onPressed: () {
-              Get.to(() => AddAttedance(cid: widget.cid));
-            },
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  5,
-                ), // Perfect square corners
-              ),
-            ),
-            child: Text("Attendance Entry"),
-          ),
+          // ElevatedButton(
+          //   onPressed: () {
+          //     Get.to(() => AddAttedance(cid: widget.cid));
+          //   },
+          //   style: ElevatedButton.styleFrom(
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(
+          //         5,
+          //       ), // Perfect square corners
+          //     ),
+          //   ),
+          //   child: Text("Attendance Entry"),
+          // ),
           SizedBox(width: 10),
           ElevatedButton(
             onPressed: () {
@@ -571,7 +634,7 @@ class _AllEmployeeAttendanceScreenState
                 ), // Perfect square corners
               ),
             ),
-            child: Text("Work Schedule"),
+            child: Text("Roster Upload"),
           ), // Get.to(()=>ShiftScreen(cid:widget.cid));
           SizedBox(width: 10),
 

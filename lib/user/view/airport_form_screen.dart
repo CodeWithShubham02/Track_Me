@@ -148,7 +148,7 @@ class _AirportFormScreenState extends State<AirportFormScreen> {
 
     return "https://$bucket.s3.$region.amazonaws.com/$objectKey";
   }
-
+  String? selectBranchName;
   void submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -175,7 +175,7 @@ class _AirportFormScreenState extends State<AirportFormScreen> {
         cid: widget.userModel.cid,
         userId: widget.userModel.userid,
         userName: widget.userModel.fullName,
-        cityName: widget.userModel.branchName,
+        cityName: selectBranchName.toString(),
         applicationNo: applicationController.text,
         relation: relation!,
         variant: variant!,
@@ -183,7 +183,7 @@ class _AirportFormScreenState extends State<AirportFormScreen> {
         remarks: remarksController.text,
         contactNo: contactController.text,
         gpsLocation: latLng,
-        kioskName: widget.userModel.branchName,
+        kioskName: selectBranchName.toString(),
         imageUrls: uploadedImageUrls,
       );
 
@@ -337,6 +337,42 @@ class _AirportFormScreenState extends State<AirportFormScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 20),
+              DropdownButtonFormField<String>(
+                value: selectBranchName,
+                decoration: const InputDecoration(
+                  hint: Row(
+                    children: [
+                      Text("Select Branch "),
+                      Text(
+                        "*",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                  border: OutlineInputBorder(),
+                ),
+
+                items: widget.userModel.branchMap
+                    .map((branch) {
+                  final name = branch['branch_name']?.toString() ?? '';
+
+                  return DropdownMenuItem<String>(
+                    value: name,
+                    child: Text(name),
+                  );
+                })
+                    .where((item) => item.value != null && item.value!.isNotEmpty)
+                    .toList(),
+
+                onChanged: (val) {
+                  setState(() {
+                    selectBranchName = val;
+                  });
+
+                  print("Selected Branch: $selectBranchName");
+                },
+              ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: contactController,
@@ -359,7 +395,7 @@ class _AirportFormScreenState extends State<AirportFormScreen> {
                 validator: (val) =>
                 val!.length != 10 ? "Enter valid number" : null,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text("Captured Images",

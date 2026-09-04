@@ -25,7 +25,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  String selectedRole = 'admin';
+  String selectedRole = 'user';
   final UserController userController=UserController();
   final TextEditingController userIdCtrl = TextEditingController();
   final TextEditingController passwordCtrl = TextEditingController();
@@ -44,114 +44,307 @@ NotificationService notificationService=NotificationService();
     notificationService.requestNotificationPermission();
   }
 
-  void login() async {
+  Future<void> login() async {
     try {
-      if (userId.text.isEmpty || userPassword.text.isEmpty) {
+      if (userId.text.trim().isEmpty ||
+          userPassword.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Enter all fields")),
+          const SnackBar(
+            content: Text("Enter all fields"),
+          ),
         );
         return;
       }
 
-      setState(() => isLoading = true);
+      setState(() {
+        isLoading = true;
+      });
 
       final result = await userController.loginUser(
         userid: userId.text.trim(),
         password: userPassword.text.trim(),
       );
 
-      setState(() => isLoading = false);
+      if (!mounted) return;
+
+      setState(() {
+        isLoading = false;
+      });
+
+      print("================================");
+      print("LOGIN RESULT");
+      print(result);
+      print("================================");
 
       if (result['status'] == true) {
-        final data = result['data'];
 
-        print("------data--------------------");
+        // =====================================================
+        // USER DATA
+        // =====================================================
+
+        final data =
+        Map<String, dynamic>.from(
+          result['data'] ?? {},
+        );
+
+        print("USER DATA:");
         print(data);
-        print("-----------------------------");
+
+        // =====================================================
+        // MULTIPLE BRANCHES
+        // =====================================================
+
+        final List<Map<String, dynamic>> branchMap =
+        ((data['branch_map'] as List?) ?? [])
+            .map<Map<String, dynamic>>(
+              (e) => Map<String, dynamic>.from(e),
+        )
+            .toList();
+
+        print(
+          "TOTAL MAPPED BRANCHES: "
+              "${branchMap.length}",
+        );
+
+        for (final branch in branchMap) {
+
+          print(
+            "--------------------------------",
+          );
+
+          print(
+            "Branch ID: "
+                "${branch['branch_id']}",
+          );
+
+          print(
+            "Branch Name: "
+                "${branch['branch_name']}",
+          );
+
+          print(
+            "Branch Lat: "
+                "${branch['branch_lat']}",
+          );
+
+          print(
+            "Branch Long: "
+                "${branch['branch_long']}",
+          );
+
+          print(
+            "Branch Distance: "
+                "${branch['branch_distance']}",
+          );
+        }
+
+        // =====================================================
+        // USER MODEL
+        // =====================================================
 
         UserModel userModel = UserModel(
           uid: data['uid']?.toString() ?? '',
           cid: data['cid']?.toString() ?? '',
           userid: data['userid']?.toString() ?? '',
-          password: data['userPassword']?.toString() ?? '',
+
+          password: data['password']?.toString() ?? '',
+
           userToken: data['user_token']?.toString() ?? '',
-          userImg: data['userImg']?.toString() ?? '',
+          userImg: data['user_img']?.toString() ?? '',
           imeiNo: data['imei_no']?.toString() ?? '',
-          fullName: data['userName']?.toString() ?? '',
-          userEmail: data['userEmail']?.toString() ?? '',
-          userPhone: data['userPhone']?.toString() ?? '',
-          gender: data['userGender']?.toString() ?? '',
+
+          // ✅ CORRECT API KEYS
+          fullName: data['full_name']?.toString() ?? '',
+          userEmail: data['user_email']?.toString() ?? '',
+          userPhone: data['user_phone']?.toString() ?? '',
+
+          gender: data['gender']?.toString() ?? '',
           fullAddress: data['full_address']?.toString() ?? '',
+
           branchId: data['storeId']?.toString() ?? '',
           branchName: data['storeName']?.toString() ?? '',
           branchDistance: data['storeDistance']?.toString() ?? '',
           branchLat: data['storeLat']?.toString() ?? '',
           branchLong: data['storeLong']?.toString() ?? '',
+
           departmentId: data['department_id']?.toString() ?? '',
           departmentName: data['department_name']?.toString() ?? '',
+
           shiftId: data['shift_id']?.toString() ?? '',
           shiftStart: data['shift_start']?.toString() ?? '',
           shiftEnd: data['shift_end']?.toString() ?? '',
+
           dateOfJoining: data['date_of_joining']?.toString() ?? '',
           lastworkingdate: data['last_working_date']?.toString() ?? '',
+
           status: data['status']?.toString() ?? '',
           role: data['role']?.toString() ?? '',
+
           createdAt: data['createdAt']?.toString() ?? '',
           updatedAt: data['updatedAt']?.toString() ?? '',
-          lastName: data['lastName']?.toString() ?? '',
-          middleName: data['middleName']?.toString() ?? '',
-          cityName: data['cityName']?.toString() ?? '',
-          pinCode: data['pinCode']?.toString() ?? '',
-          districtName: data['districtName']?.toString() ?? '',
-          reportingPosition: data['reportingPosition']?.toString() ?? '',
+
+          lastName: data['last_name']?.toString() ?? '',
+          middleName: data['middle_name']?.toString() ?? '',
+
+          cityName: data['city_name']?.toString() ?? '',
+          pinCode: data['pin_code']?.toString() ?? '',
+          districtName: data['district_name']?.toString() ?? '',
+          reportingPosition:
+          data['reporting_position']?.toString() ?? '',
+
+          branchMap: branchMap,
         );
 
-        final prefs = await SharedPreferences.getInstance();
+        // =====================================================
+        // SHARED PREFERENCES
+        // =====================================================
 
-        await prefs.setString('uid', userModel.uid);
-        await prefs.setString('branchLat', userModel.branchLat);
-        await prefs.setString('branchLong', userModel.branchLong);
-        await prefs.setString('role', userModel.role);
-        await prefs.setString('userimg', userModel.userImg);
+        final prefs =
+        await SharedPreferences.getInstance();
+
+        await prefs.setString(
+          'uid',
+          userModel.uid,
+        );
+
+        await prefs.setString(
+          'cid',
+          userModel.cid,
+        );
+
+        await prefs.setString(
+          'branchLat',
+          userModel.branchLat,
+        );
+
+        await prefs.setString(
+          'branchLong',
+          userModel.branchLong,
+        );
+
+        await prefs.setString(
+          'role',
+          userModel.role,
+        );
+
+        await prefs.setString(
+          'userimg',
+          userModel.userImg,
+        );
+
+        // COMPLETE USER MODEL
         await prefs.setString(
           'user_model',
-          jsonEncode(userModel.toJson()),
+          jsonEncode(
+            userModel.toJson(),
+          ),
         );
+
+        // MULTIPLE BRANCHES
+        await prefs.setString(
+          'branch_map',
+          jsonEncode(
+            userModel.branchMap,
+          ),
+        );
+
+        print(
+          "================================",
+        );
+
+        print(
+          "USER LOGIN SUCCESS",
+        );
+
+        print(
+          "UID: ${userModel.uid}",
+        );
+
+        print(
+          "CID: ${userModel.cid}",
+        );
+
+        print(
+          "BRANCH COUNT: "
+              "${userModel.branchMap.length}",
+        );
+
+        print(
+          "================================",
+        );
+
+        // =====================================================
+        // SUCCESS MESSAGE
+        // =====================================================
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Welcome ${userModel.userid}"),
+            content: Text(
+              "Welcome ${userModel.userid}",
+            ),
           ),
         );
+
+        // =====================================================
+        // GO TO HOME
+        // =====================================================
 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => EmployeeHomeScreen(
-              userModel: userModel,
+            builder: (_) =>
+                EmployeeHomeScreen(
+                  userModel: userModel,
+                ),
+          ),
+        );
+
+      } else {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result['message'] ??
+                  "Login failed",
             ),
           ),
         );
-      } else {
+      }
+
+    } catch (e, stackTrace) {
+
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+
+      print(
+        "==============================",
+      );
+
+      print(
+        "LOGIN ERROR",
+      );
+
+      print(e);
+
+      print(stackTrace);
+
+      print(
+        "==============================",
+      );
+
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message'] ?? "Login failed"),
+            content: Text(
+              "Error: $e",
+            ),
+            backgroundColor: Colors.red,
           ),
         );
       }
-    } catch (e, stackTrace) {
-      setState(() => isLoading = false);
-
-      print("LOGIN ERROR:");
-      print(e);
-      print(stackTrace);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error: $e"),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
   Future<UserModel?> getSavedUser() async {

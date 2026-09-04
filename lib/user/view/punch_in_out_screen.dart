@@ -593,6 +593,7 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
     );
   }
 
+  String? selectBranchName;
 
   Future<void> punchIn() async {
     // 1️⃣ Distance check
@@ -648,7 +649,8 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
         "distance": currentDistance!.toString(),
         "department": widget.userModel.departmentName,
         "name": widget.userModel.fullName,
-        "office_name": widget.userModel.branchName,
+        //"office_name": widget.userModel.branchName,
+        "office_name": selectBranchName.toString(),
         "shift_start": widget.userModel.shiftStart,
         "shift_end": widget.userModel.shiftEnd,
         "lat": currentPosition!.latitude.toString(),
@@ -925,6 +927,46 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: DropdownButtonFormField<String>(
+                value: selectBranchName,
+                decoration: const InputDecoration(
+                  hint: Row(
+                    children: [
+                      Text("Select Branch"),
+                      Text(
+                        "*",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                  border: OutlineInputBorder(),
+                ),
+
+                items: widget.userModel.branchMap
+                    .map((branch) {
+                  final name = branch['branch_name']?.toString() ?? '';
+
+                  return DropdownMenuItem<String>(
+                    value: name,
+                    child: Text(name),
+                  );
+                })
+                    .where((item) => item.value != null && item.value!.isNotEmpty)
+                    .toList(),
+
+                onChanged: (val) {
+                  setState(() {
+                    selectBranchName = val;
+                  });
+
+                  print("Selected Branch: $selectBranchName");
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.all(12),
               child: TextField(

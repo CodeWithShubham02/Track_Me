@@ -63,13 +63,19 @@ class _AddUserScreenState extends State<AddUserScreen> {
         cityNameCtrl.text.isEmpty ||
         emailCtrl.text.isEmpty ||
         phoneCtrl.text.isEmpty ||
-        selectedBranchId == null ||
+        selectedBranches.isEmpty ||
         selectedShiftId == null ||
         selectedDepartId == null ||
         selectedGender == null) {
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("⚠️ Please fill all required fields")),
+        const SnackBar(
+          content: Text(
+            "⚠️ Please fill all required fields",
+          ),
+        ),
       );
+
       return;
     }
     print("date of joing ${dateController.text}");
@@ -99,6 +105,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
       branchDistance: selectedBranchDistance ?? "",
       branchLat: selectedBranchLat ?? "",
       branchLong: selectedBranchLong ?? "",
+      branchIds: selectedBranchIds,
       departmentId: selectedDepartId ?? "",
       departmentName: selectedDepartName ?? "",
       shiftId: selectedShiftId ?? "",
@@ -146,6 +153,14 @@ class _AddUserScreenState extends State<AddUserScreen> {
   //branch
   final BranchController _controller = BranchController();
   List<BranchModel> branchList = [];
+  // ============================================================
+// MULTIPLE BRANCH
+// ============================================================
+
+  List<BranchModel> selectedBranches = [];
+
+  List<String> selectedBranchIds = [];
+
   String? selectedBranchId;
   String? selectedBranchName;
   String? selectedBranchLat;
@@ -326,7 +341,219 @@ class _AddUserScreenState extends State<AddUserScreen> {
       isDepartLoading = false;
     });
   }
+  Future<void> selectMultipleBranches() async {
+    List<BranchModel> tempSelected = List.from(selectedBranches);
 
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text(
+                "Select Branches",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              content: SizedBox(
+                width: 450,
+                height: 450,
+
+                child: Column(
+                  children: [
+
+                    // =================================================
+                    // SELECT ALL
+                    // =================================================
+
+                    CheckboxListTile(
+                      title: const Text(
+                        "Select All",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      value: tempSelected.length == branchList.length &&
+                          branchList.isNotEmpty,
+
+                      onChanged: (value) {
+
+                        setDialogState(() {
+
+                          if (value == true) {
+
+                            tempSelected = List.from(branchList);
+
+                          } else {
+
+                            tempSelected.clear();
+                          }
+
+                        });
+
+                      },
+                    ),
+
+                    const Divider(),
+
+                    // =================================================
+                    // BRANCH LIST
+                    // =================================================
+
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: branchList.length,
+
+                        itemBuilder: (context, index) {
+
+                          final branch = branchList[index];
+
+                          final isSelected = tempSelected.any(
+                                (b) => b.id == branch.id,
+                          );
+
+                          return CheckboxListTile(
+                            title: Text(
+                              branch.branchName,
+                            ),
+
+                            subtitle: Text(
+                              "ID: ${branch.id}",
+                            ),
+
+                            value: isSelected,
+
+                            onChanged: (value) {
+
+                              setDialogState(() {
+
+                                if (value == true) {
+
+                                  if (!tempSelected.any(
+                                        (b) => b.id == branch.id,
+                                  )) {
+                                    tempSelected.add(branch);
+                                  }
+
+                                } else {
+
+                                  tempSelected.removeWhere(
+                                        (b) => b.id == branch.id,
+                                  );
+
+                                }
+
+                              });
+
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              actions: [
+
+                // =================================================
+                // CLEAR
+                // =================================================
+
+                TextButton(
+                  onPressed: () {
+
+                    setDialogState(() {
+                      tempSelected.clear();
+                    });
+
+                  },
+
+                  child: const Text(
+                    "Clear",
+                    style: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+
+                // =================================================
+                // CANCEL
+                // =================================================
+
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+
+                  child: const Text("Cancel"),
+                ),
+
+                // =================================================
+                // APPLY
+                // =================================================
+
+                ElevatedButton(
+                  onPressed: () {
+
+                    if (tempSelected.isEmpty) {
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "Please select at least one branch",
+                          ),
+                        ),
+                      );
+
+                      return;
+                    }
+
+                    setState(() {
+
+                      selectedBranches = List.from(tempSelected);
+
+                      // ---------------------------------------------
+                      // First branch = existing users table branch
+                      // ---------------------------------------------
+
+                      final firstBranch = selectedBranches.first;
+
+                      selectedBranchId = firstBranch.id;
+
+                      selectedBranchName = firstBranch.branchName;
+
+                      selectedBranchLat = firstBranch.lat;
+
+                      selectedBranchLong = firstBranch.long;
+
+                      selectedBranchDistance = firstBranch.distance;
+
+                      // ---------------------------------------------
+                      // All branch IDs
+                      // ---------------------------------------------
+
+                      selectedBranchIds = selectedBranches
+                          .map((branch) => branch.id)
+                          .toList();
+
+                    });
+
+                    Navigator.pop(context);
+                  },
+
+                  child: const Text("Apply"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
   @override
   void dispose() {
     // TODO: implement dispose
@@ -529,30 +756,44 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : DropdownButtonFormField<String>(
-                      value: selectedBranchId,
-                      hint: const Text("Select Kiosk *"),
-                      items: branchList.map((branch) {
-                        return DropdownMenuItem<String>(
-                          value: branch.id,
-                          child: Text(branch.branchName),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        final branch =
-                        branchList.firstWhere((b) => b.id == value);
-                        setState(() {
-                          selectedBranchId = branch.id;
-                          selectedBranchName = branch.branchName;
-                          selectedBranchLat = branch.lat;
-                          selectedBranchLong = branch.long;
-                          selectedBranchDistance = branch.distance;
-                        });
+                    child: InkWell(
+                      onTap: isLoading
+                          ? null
+                          : () async {
+                        await selectMultipleBranches();
                       },
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
+
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: "Select Branches *",
+                          border: OutlineInputBorder(),
+                        ),
+
+                        child: Row(
+                          children: [
+
+                            Expanded(
+                              child: selectedBranches.isEmpty
+                                  ? const Text(
+                                "Select Branches",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                ),
+                              )
+                                  : Text(
+                                selectedBranches
+                                    .map((branch) => branch.branchName)
+                                    .join(", "),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+
+                            const Icon(
+                              Icons.arrow_drop_down,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

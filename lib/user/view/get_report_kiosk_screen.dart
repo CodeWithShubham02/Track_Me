@@ -37,17 +37,48 @@ class _GetReportKioskScreenState extends State<GetReportKioskScreen> {
   Future<void> fetchData() async {
     setState(() => loading = true);
 
-    String date =
-    DateFormat('yyyy-MM-dd').format(selectedDate);
+    try {
+      final date = DateFormat('yyyy-MM-dd').format(selectedDate);
 
-    reports = await GetReportKioskController.fetchReports(
-      widget.userModel.branchName,
-      date,
-    );
-    print("----------report----------");
-    print(reports);
+      // branchMap se saare branch names nikalo
+      final branchNames = widget.userModel.branchMap
+          .map((branch) => branch['branch_name']?.toString().trim() ?? '')
+          .where((name) => name.isNotEmpty)
+          .toSet()
+          .toList();
 
-    setState(() => loading = false);
+
+      print("========== USER BRANCHES ==========");
+      print(branchNames);
+
+      if (branchNames.isEmpty) {
+        setState(() {
+          reports = [];
+          loading = false;
+        });
+        return;
+      }
+
+      final result = await GetReportKioskController.fetchReports(
+        branchNames,
+        date,
+      );
+
+      setState(() {
+        reports = result;
+        loading = false;
+      });
+
+      print("========== TOTAL REPORTS ==========");
+      print(reports.length);
+    } catch (e) {
+      print("❌ Fetch Data Error: $e");
+
+      setState(() {
+        reports = [];
+        loading = false;
+      });
+    }
   }
 
   @override

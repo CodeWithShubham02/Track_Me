@@ -1050,6 +1050,7 @@ class _AllEmployeeAttendanceScreenState
                                       : '-',
                                 ),
                               ),
+
                               DataCell(Text(e['userid'] ?? '-')),
                               // DataCell(Text(e['id'] ?? '-')),
                               DataCell(Text(e['name'] ?? '-')),

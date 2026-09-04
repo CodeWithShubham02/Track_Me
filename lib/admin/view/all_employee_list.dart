@@ -355,7 +355,7 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
     // Header Row
     sheet.appendRow([
       // TextCellValue("UID"),
-      // TextCellValue("Created Date"),
+       TextCellValue("Created Date"),
       // TextCellValue("Updated date"),
       TextCellValue("User Id"),
       TextCellValue("Full Name"),
@@ -404,12 +404,10 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
 
       sheet.appendRow([
         // TextCellValue(u.uid ?? ""),
-        // TextCellValue(
-        //   u.createdAt != null
-        //       ? "${DateFormat('dd MMM yyyy').format(DateTime.parse(u.createdAt!))} "
-        //       "${DateFormat('hh:mm a').format(DateTime.parse(u.createdAt!))}"
-        //       : "",
-        // ),
+        TextCellValue(
+          u.createdAt != null
+              ? "${DateFormat('dd MMM yyyy').format(DateTime.parse(u.createdAt!))} " : "",
+        ),
         // TextCellValue(
         //   u.updatedAt != null
         //       ? "${DateFormat('dd MMM yyyy').format(DateTime.parse(u.updatedAt!))} "
@@ -902,8 +900,8 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
                                   DataCell(Row(
                                     children: [
                                       Text(formattedDate),
-                                      Text(' - '),
-                                      Text(formattedTime)
+                                      // Text(' - '),
+                                      // Text(formattedTime)
                                     ],
                                   )),
                                   // DataCell(Row(

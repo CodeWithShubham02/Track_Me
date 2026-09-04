@@ -8,31 +8,43 @@ class GetReportKioskController {
       "http://15.206.209.30/attendance/get_reports_by_kiosk.php";
 
   static Future<List<ClientFormReportModel>> fetchReports(
-      String kioskName, String date) async {
-
+      List<String> kioskNames,
+      String date,
+      ) async {
     try {
-      final res = await http.get(
-        Uri.parse("$api?kiosk_name=$kioskName&date=$date"),
+      final kioskName = kioskNames.join(',');
+
+      final uri = Uri.parse(api).replace(
+        queryParameters: {
+          'kiosk_name': kioskName,
+          'date': date,
+        },
       );
 
-      if (res.statusCode == 200) {
+      print("API: $uri");
 
+      final res = await http.get(uri);
+
+      print("Response: ${res.body}");
+
+      if (res.statusCode == 200) {
         final jsonData = json.decode(res.body);
-          print("---------Kiosk By-----------");
-          print(jsonData);
-          print("--------------------");
+
         if (jsonData['status'] == true) {
           return (jsonData['data'] as List)
-              .map((e) => ClientFormReportModel.fromJson(e))
+              .map(
+                (e) => ClientFormReportModel.fromJson(
+              Map<String, dynamic>.from(e),
+            ),
+          )
               .toList();
         }
       }
 
       return [];
     } catch (e) {
-      print("Error: $e");
+      print("❌ Error: $e");
       return [];
     }
   }
-
 }

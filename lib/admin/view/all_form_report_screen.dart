@@ -359,12 +359,16 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
         TextCellValue(row.userId),
         TextCellValue(row.userName),
         TextCellValue(row.siteName),
-        TextCellValue(row.reportDate),
+        TextCellValue(
+          DateFormat('dd-MM-yyyy').format(
+            DateTime.parse(row.reportDate),
+          ),
+        ),//i want this formate dd-mm-yyyy
         TextCellValue(formatTime1(row.reportTime ?? "")),
         TextCellValue(row.applicationNo),
         TextCellValue(row.relation),
         TextCellValue(row.variant),
-        TextCellValue(row.status),
+        TextCellValue(row.status.toUpperCase()),
         TextCellValue(row.remarks),
         TextCellValue(row.managerRemarks),
         TextCellValue(imageUrls),
@@ -410,21 +414,22 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
   }
 
   Future<void> exportReportsToApprovedExcel(
-    BuildContext context,
-    List<ClientFormReportModel> reports,
-  ) async {
+      BuildContext context,
+      List<ClientFormReportModel> reports,
+      ) async {
     final Excel excel = Excel.createExcel();
-    // Create your sheet FIRST
+
+    // Create Reports sheet
     final Sheet sheet = excel['Reports'];
 
-// Then delete all other sheets
+    // Delete all other sheets
     for (var sheetName in List.from(excel.tables.keys)) {
       if (sheetName != 'Reports') {
         excel.delete(sheetName);
       }
     }
 
-    // 🟢 HEADER ROW
+    // HEADER ROW
     sheet.appendRow([
       TextCellValue("Report Id"),
       TextCellValue("User ID"),
@@ -447,57 +452,116 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
       TextCellValue("RemarksDate"),
     ]);
 
-    // 🔵 DATA ROWS
+    // DATA ROWS
     for (var row in reports) {
       final imageUrls = row.imageUrls.isNotEmpty
           ? row.imageUrls.join(", ")
           : "";
-      String address = await getAddressCached(row.gpsLocation);
+
+      final String address =
+      await getAddressCached(row.gpsLocation);
+
       sheet.appendRow([
         TextCellValue(row.id.toString()),
         TextCellValue(row.userId),
         TextCellValue(row.userName),
         TextCellValue(row.siteName),
-        TextCellValue(row.reportDate),
-        TextCellValue(formatTime1(row.reportTime ?? "")),
+
+        TextCellValue(
+          DateFormat('dd-MM-yyyy').format(
+            DateTime.parse(row.reportDate),
+          ),
+        ),
+
+        TextCellValue(
+          formatTime1(row.reportTime ?? ""),
+        ),
+
         TextCellValue(row.applicationNo),
         TextCellValue(row.relation),
         TextCellValue(row.variant),
-        TextCellValue(row.status),
+        TextCellValue(row.status.toUpperCase()),
         TextCellValue(row.remarks),
         TextCellValue(row.managerRemarks),
         TextCellValue(imageUrls),
         TextCellValue(row.contactNo),
         TextCellValue(address),
         TextCellValue(row.kioskName),
+
+        // Bank Remark
         TextCellValue(row.bankRemarks),
+
+        // Update Status
         TextCellValue(row.updateStatus),
+
         TextCellValue(
-          DateFormat('yyyy-MM-dd').format(DateTime.parse(row.createdAt)),
+          DateFormat('yyyy-MM-dd').format(
+            DateTime.parse(row.createdAt),
+          ),
         ),
       ]);
     }
+
     final List<int>? bytes = excel.encode();
-    if (bytes == null) return;
+
+    if (bytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Failed to create Excel file"),
+        ),
+      );
+      return;
+    }
 
     if (kIsWeb) {
-      // Web download
-      final blob = html.Blob([Uint8List.fromList(bytes)]);
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute("download", "Post_Upload_File.xlsx")
-        ..click();
-      html.Url.revokeObjectUrl(url);
-    } else {
-      // Android/iOS: Save to Documents folder
-      final directory = await getApplicationDocumentsDirectory();
-      final filePath = "${directory.path}/Post_Upload_File.xlsx";
-      final file = File(filePath);
-      await file.writeAsBytes(bytes, flush: true);
+      // WEB
+      final blob = html.Blob([
+        Uint8List.fromList(bytes),
+      ]);
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Excel saved to $filePath")));
+      final url =
+      html.Url.createObjectUrlFromBlob(blob);
+
+      final anchor = html.AnchorElement(
+        href: url,
+      )
+        ..setAttribute(
+          "download",
+          "Post_Upload_File.xlsx",
+        )
+        ..click();
+
+      html.Url.revokeObjectUrl(url);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Post/Final Excel downloaded successfully",
+          ),
+        ),
+      );
+    } else {
+      // ANDROID / iOS
+      final directory =
+      await getApplicationDocumentsDirectory();
+
+      final filePath =
+          "${directory.path}/Post_Upload_File.xlsx";
+
+      final file = File(filePath);
+
+      await file.writeAsBytes(
+        bytes,
+        flush: true,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Excel saved to $filePath",
+          ),
+        ),
+      );
     }
   }
   String formatTime1(String time) {
@@ -872,7 +936,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                 String status = statuses[index];
 
                 return ListTile(
-                  title: Text(status),
+                  title: Text(status.toUpperCase()),
                   onTap: () {
                     setState(() {
                       selectedStatus = status;
@@ -1210,22 +1274,51 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
           ElevatedButton(
             onPressed: () async {
               final reports = await reportsFuture;
+
               if (reports.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("No reports to download")),
+                  const SnackBar(
+                    content: Text("No reports to download"),
+                  ),
                 );
                 return;
               }
-              await exportReportsToApprovedExcel(context, reports);
+
+              // Sirf wahi rows jisme Bank Remark ya Update Status available hai
+              final postFinalReports = reports.where((report) {
+                final bankRemark = report.bankRemarks.trim();
+                final updateStatus = report.updateStatus.trim();
+
+                return bankRemark.isNotEmpty || updateStatus.isNotEmpty;
+              }).toList();
+
+              // Agar kisi bhi row me Bank Remark / Update Status nahi hai
+              if (postFinalReports.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "No Post/Final records available. Bank Remark or Update Status is required.",
+                    ),
+                  ),
+                );
+                return;
+              }
+
+              // Sirf filtered rows export hongi
+              await exportReportsToApprovedExcel(
+                context,
+                postFinalReports,
+              );
             },
             style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5), // Perfect square corners
+                borderRadius: BorderRadius.circular(5),
               ),
             ),
-            child: Row(
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Container(child: Text("Post/Final Download")),
+                Text("Post/Final Download"),
               ],
             ),
           ),
@@ -1557,7 +1650,13 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                     DataCell(Text(report.userId)),
                                     DataCell(Text(report.userName)),
                                     DataCell(Text(report.siteName)),
-                                    DataCell(Text(report.reportDate)),
+                                    DataCell(
+                                      Text(
+                                        DateFormat('dd-MM-yyyy').format(
+                                          DateTime.parse(report.reportDate),
+                                        ),
+                                      ),
+                                    ),
                                     DataCell(Text(formatTime1(report.reportTime))),
                                     DataCell(Text(report.applicationNo)),
                                     DataCell(Text(report.relation)),
@@ -1566,7 +1665,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                     // Status Color
                                     DataCell(
                                       Text(
-                                        report.status,
+                                        report.status.toUpperCase(),
                                         style: TextStyle(
                                           color:
                                               report.bankRemarks.toLowerCase() ==

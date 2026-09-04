@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../admin/model/user_model.dart';
+
 class UsersPerformanceScreen extends StatefulWidget {
   final String branchName;
+  final UserModel userModel;
   final String cid;
-  const UsersPerformanceScreen({super.key, required this.branchName,required this.cid});
+  const UsersPerformanceScreen({super.key, required this.branchName,required this.cid,required this.userModel});
 
   @override
   State<UsersPerformanceScreen> createState() => _UsersPerformanceScreenState();
@@ -21,24 +24,74 @@ class _UsersPerformanceScreenState extends State<UsersPerformanceScreen> {
   List<Map<String,dynamic>> performanceList=[];
 
   Future<void> fetchPerformance() async {
-    final response = await http.post(
-      Uri.parse("http://15.206.209.30/attendance/weekly_team_performance.php"),
-      body: {
-        "cid": widget.cid,
-      },
-    );
+    try {
+      List<String> branchNames = [];
 
-    print(response.body);
+      // 1. Pehle branchMap check karo
+      if (widget.userModel.branchMap.isNotEmpty) {
+        branchNames = widget.userModel.branchMap
+            .map(
+              (branch) =>
+          branch["branch_name"]?.toString().trim() ?? "",
+        )
+            .where((name) => name.isNotEmpty)
+            .toSet()
+            .toList();
+      }
 
-    final json = jsonDecode(response.body);
+      // 2. Agar branchMap empty hai
+      //    to existing branchName use karo
+      if (branchNames.isEmpty &&
+          widget.branchName.trim().isNotEmpty) {
+        branchNames = [
+          widget.branchName.trim(),
+        ];
+      }
 
-    if (json["status"] == true) {
+      print("========== PERFORMANCE BRANCH ==========");
+      print(branchNames);
+
+      if (branchNames.isEmpty) {
+        setState(() {
+          performanceList = [];
+        });
+        return;
+      }
+
+      final response = await http.post(
+        Uri.parse(
+          "http://15.206.209.30/attendance/weekly_team_performance.php",
+        ),
+        body: {
+          "cid": widget.cid,
+          "branch_names": branchNames.join(","),
+        },
+      );
+
+      print("========== PERFORMANCE RESPONSE ==========");
+      print(response.body);
+
+      final jsonData = jsonDecode(response.body);
+
+      if (jsonData["status"] == true) {
+        setState(() {
+          performanceList =
+          List<Map<String, dynamic>>.from(
+            jsonData["data"] ?? [],
+          );
+        });
+
+        print("Performance Records: ${performanceList.length}");
+      } else {
+        setState(() {
+          performanceList = [];
+        });
+      }
+    } catch (e) {
+      print("❌ Performance Error: $e");
+
       setState(() {
-        performanceList =
-        List<Map<String, dynamic>>.from(json["data"]);
-        print("=======================");
-        print(performanceList);
-        print("=======================");
+        performanceList = [];
       });
     }
   }
@@ -100,9 +153,49 @@ class _UsersPerformanceScreenState extends State<UsersPerformanceScreen> {
 
     if (grouped.isEmpty) {
       return const Center(
-        child: CircularProgressIndicator(),
+        child: Text("No Performance Data"),
       );
     }
+
+    // ---------------------------------------------
+    // Agar branchMap hai
+    // to saare mapped branches show karo
+    // ---------------------------------------------
+
+    if (widget.userModel.branchMap.isNotEmpty) {
+      final mappedBranchNames = widget.userModel.branchMap
+          .map(
+            (branch) =>
+        branch["branch_name"]?.toString().trim() ?? "",
+      )
+          .where((name) => name.isNotEmpty)
+          .toSet()
+          .toList();
+
+      final availableBranches = mappedBranchNames
+          .where((branchName) => grouped.containsKey(branchName))
+          .toList();
+
+      if (availableBranches.isEmpty) {
+        return const Center(
+          child: Text("No Performance Data"),
+        );
+      }
+
+      return Column(
+        children: availableBranches.map((branchName) {
+          return buildBranchPerformanceCard(
+            branchName,
+            grouped[branchName]!,
+          );
+        }).toList(),
+      );
+    }
+
+    // ---------------------------------------------
+    // Fallback:
+    // branchMap empty hai to existing branchName
+    // ---------------------------------------------
 
     if (!grouped.containsKey(widget.branchName)) {
       return const Center(
@@ -110,10 +203,18 @@ class _UsersPerformanceScreenState extends State<UsersPerformanceScreen> {
       );
     }
 
-    final users = grouped[widget.branchName]!;
-
+    return buildBranchPerformanceCard(
+      widget.branchName,
+      grouped[widget.branchName]!,
+    );
+  }
+  Widget buildBranchPerformanceCard(
+      String branchName,
+      List<Map<String, dynamic>> users,
+      ) {
     users.sort(
-          (a, b) => (b["forms"] as int).compareTo(a["forms"] as int),
+          (a, b) => ((b["forms"] ?? 0) as num)
+          .compareTo((a["forms"] ?? 0) as num),
     );
 
     return Card(
@@ -138,7 +239,7 @@ class _UsersPerformanceScreenState extends State<UsersPerformanceScreen> {
             ),
             child: Center(
               child: Text(
-                widget.branchName,
+                branchName,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -174,13 +275,17 @@ class _UsersPerformanceScreenState extends State<UsersPerformanceScreen> {
                       SizedBox(
                         width: 150,
                         child: Text(
-                          u["name"],
+                          u["name"]?.toString() ?? "",
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
-                    DataCell(Text("${u["forms"]}")),
-                    DataCell(Text("${u["performance"]}%")),
+                    DataCell(
+                      Text("${u["forms"] ?? 0}"),
+                    ),
+                    DataCell(
+                      Text("${u["performance"] ?? 0}%"),
+                    ),
                   ],
                 );
               }),

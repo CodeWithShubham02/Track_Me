@@ -511,6 +511,24 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   }
   @override
   void initState() {
+    print("=====================================");
+    print("=====================================");
+    print("=====================================");
+    final branches = widget.userModel.branchMap;
+
+    if (branches.isNotEmpty) {
+
+      final firstBranch = branches.first;
+
+      print("Branch ID: ${firstBranch['branch_id']}");
+      print("Branch Name: ${firstBranch['branch_name']}");
+      print("Latitude: ${firstBranch['branch_lat']}");
+      print("Longitude: ${firstBranch['branch_long']}");
+      print("Distance: ${firstBranch['branch_distance']}");
+    }
+    print("=====================================");
+    print("=====================================");
+    print("=====================================");
     getCompanyForms();
     _controllerTopCenter =
         ConfettiController(duration: const Duration(seconds: 5));
@@ -1728,6 +1746,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       ),
     );
 
+
     if (attendanceId != null &&
         widget.userModel.departmentName != "Team Leader") {
 
@@ -1756,7 +1775,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
           "User Performance",
           Icons.data_exploration,
               () => Get.to(
-                () => UsersPerformanceScreen(branchName: widget.userModel.branchName,cid: widget.userModel.cid,),
+                () => UsersPerformanceScreen(
+                  branchName: widget.userModel.branchName,
+                  cid: widget.userModel.cid,
+                  userModel: widget.userModel
+                ),
 
           ),
         ),
@@ -1812,7 +1835,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
           "User Performance",
           Icons.data_exploration,
               () => Get.to(
-                () => UsersPerformanceScreen(branchName: widget.userModel.branchName,cid: widget.userModel.cid,),
+                () => UsersPerformanceScreen(
+                  branchName: widget.userModel.branchName,
+                  cid: widget.userModel.cid,
+                userModel: widget.userModel,
+                ),
 
           ),
         ),
@@ -1953,7 +1980,12 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
 
             tableRow(
               "Branch",
-              widget.userModel.branchName,
+              widget.userModel.branchMap.isNotEmpty
+                  ? widget.userModel.branchMap
+                  .map((branch) => branch['branch_name']?.toString() ?? '')
+                  .where((name) => name.isNotEmpty)
+                  .join(', ')
+                  : widget.userModel.branchName,
             ),
 
             tableRow(

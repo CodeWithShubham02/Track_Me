@@ -1345,13 +1345,18 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       Expanded(child: userChart()),
                     ],
                   ),
-                  widget.cid==1.toString()?Row(
+                  widget.cid == "1"? Row(
                     children: [
-                      Expanded(child: reportChart(reportList)),
-                      SizedBox(width: 20),
-                      Expanded(child: reportMonthChart()),
+                      Expanded(
+                        child: reportChart(reportList),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: reportMonthChart(),
+                      ),
                     ],
-                  ):SizedBox.shrink(),
+                  )
+                      : const SizedBox.shrink(),
                   Row(
                     children: [
                       Expanded(child:  dynamicTodayFormChart(dynamicFormChart)),
@@ -1444,7 +1449,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               },
             ),
             // 🟢 LOCATION CAPTURING
-            widget.cid==1.toString()?ListTile(
+            widget.cid == "1"?ListTile(
               leading: Icon(Icons.file_open_outlined,color: Color(0xff2563EB),size: 22,),
               title: Text("Client Submissions Form",
                 style: TextStyle(

@@ -624,7 +624,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                 items: relationList.map((status) {
                   return DropdownMenuItem<String>(
                     value: status,
-                    child: Text(status),
+                    child: Text(status.toUpperCase()),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -647,7 +647,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                 items: variantList.map((status) {
                   return DropdownMenuItem<String>(
                     value: status,
-                    child: Text(status),
+                    child: Text(status.toUpperCase()),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -670,7 +670,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                 items: statusList.map((status) {
                   return DropdownMenuItem<String>(
                     value: status,
-                    child: Text(status),
+                    child: Text(status.toUpperCase()),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -1503,8 +1503,11 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                               ),
                               columns: [
                                 DataColumn(label: Text("Action",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
-                                //DataColumn(label: Text("UID")),
-                                DataColumn(label: Text("User Id",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Report Id",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif')
+                                  ,)),
+                                DataColumn(label: Text("User Id",
+                                  style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif')
+                                  ,)),
                                 DataColumn(
                                   label: Row(
                                     children: [
@@ -1646,7 +1649,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                       ),
                                     ),
 
-                                    //DataCell(Text(report.uid.toString())),
+                                    DataCell(Text(report.id.toString())),
                                     DataCell(Text(report.userId)),
                                     DataCell(Text(report.userName)),
                                     DataCell(Text(report.siteName)),
@@ -1659,8 +1662,8 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                     ),
                                     DataCell(Text(formatTime1(report.reportTime))),
                                     DataCell(Text(report.applicationNo)),
-                                    DataCell(Text(report.relation)),
-                                    DataCell(Text(report.variant)),
+                                    DataCell(Text(report.relation.toUpperCase())),
+                                    DataCell(Text(report.variant.toUpperCase())),
 
                                     // Status Color
                                     DataCell(

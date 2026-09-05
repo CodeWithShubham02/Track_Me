@@ -2,15 +2,17 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:joizone/admin/model/user_model.dart';
 import '../controller/attendance_by_kiosk_controller.dart';
 import '../controller/attendance_controller.dart';
 import 'package:http/http.dart' as http;
 class OfficeAttendanceScreen extends StatefulWidget {
   final String officeName;
-
+final UserModel userModel;
   const OfficeAttendanceScreen({
     super.key,
     required this.officeName,
+    required this.userModel
   });
 
   @override
@@ -58,21 +60,60 @@ class _OfficeAttendanceScreenState extends State<OfficeAttendanceScreen> {
       final from = DateFormat('yyyy-MM-dd').format(range.start);
       final to = DateFormat('yyyy-MM-dd').format(range.end);
 
-      attendanceRecords = await AttendanceController.fetchAttendance(
-        officeName: widget.officeName,
-        fromDate: from,
-        toDate: to,
-      );
+      List<Map<String, dynamic>> allAttendance = [];
 
-      filteredRecords = List.from(attendanceRecords);
-      print("==========================================");
-      print(attendanceRecords.first);
-      print("==========================================");
+      // branchMap empty → officeName use karo
+      if (widget.userModel.branchMap.isEmpty) {
+        print(
+          "branchMap empty → Fetching attendance for: ${widget.officeName}",
+        );
 
+        final records = await AttendanceController.fetchAttendance(
+          officeName: widget.officeName,
+          fromDate: from,
+          toDate: to,
+        );
+
+        allAttendance.addAll(records);
+      }
+
+      // branchMap available → branch-wise attendance fetch karo
+      else {
+        for (final branch in widget.userModel.branchMap) {
+          final branchName = branch['branch_name']?.toString();
+
+          if (branchName == null || branchName.isEmpty) {
+            continue;
+          }
+
+          print("Fetching attendance for branch: $branchName");
+
+          final records = await AttendanceController.fetchAttendance(
+            officeName: branchName,
+            fromDate: from,
+            toDate: to,
+          );
+
+          allAttendance.addAll(records);
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          attendanceRecords = allAttendance;
+          filteredRecords = List.from(allAttendance);
+        });
+      }
+
+      print("Total attendance records: ${attendanceRecords.length}");
     } catch (e) {
       debugPrint("Attendance error: $e");
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 

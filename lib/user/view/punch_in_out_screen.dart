@@ -53,6 +53,10 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.userModel.branchMap.isNotEmpty) {
+      selectBranchName =
+          widget.userModel.branchMap.first['branch_name']?.toString();
+    }
     print("-----punch------");
     print(widget.userModel.uid);
     print(widget.userModel.cid);
@@ -112,7 +116,13 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
   Future<void> loadLiveLocation() async {
     final officeLat = toDouble(widget.userModel.branchLat);
     final officeLng = toDouble(widget.userModel.branchLong);
-
+    print("==============================");
+    print("==============================");
+    print(officeLat);
+    print(officeLng);
+    print(widget.userModel.branchDistance);
+    print("==============================");
+    print("==============================");
     final pos = await getCurrentLocation();
 
     final dist = calculateDistance(
@@ -932,13 +942,16 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
               padding: const EdgeInsets.all(12.0),
               child: DropdownButtonFormField<String>(
                 value: selectBranchName,
+
                 decoration: const InputDecoration(
                   hint: Row(
                     children: [
                       Text("Select Branch"),
                       Text(
                         "*",
-                        style: TextStyle(color: Colors.red),
+                        style: TextStyle(
+                          color: Colors.red,
+                        ),
                       ),
                     ],
                   ),
@@ -947,14 +960,19 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
                 items: widget.userModel.branchMap
                     .map((branch) {
-                  final name = branch['branch_name']?.toString() ?? '';
+                  final name =
+                      branch['branch_name']?.toString().trim() ?? '';
+
+                  if (name.isEmpty) {
+                    return null;
+                  }
 
                   return DropdownMenuItem<String>(
                     value: name,
                     child: Text(name),
                   );
                 })
-                    .where((item) => item.value != null && item.value!.isNotEmpty)
+                    .whereType<DropdownMenuItem<String>>()
                     .toList(),
 
                 onChanged: (val) {

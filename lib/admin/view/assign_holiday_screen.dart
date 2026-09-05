@@ -827,6 +827,7 @@ class _AssignHolidayScreenState
         TextCellValue("userid"),
         TextCellValue("user_type"),
         TextCellValue("office_name"),
+        TextCellValue("user_name"),
       ]);
 
       // ========================================================
@@ -860,6 +861,9 @@ class _AssignHolidayScreenState
           ),
           TextCellValue(
             "${user["branch_name"] ?? ""}",
+          ),
+          TextCellValue(
+            "${user["full_name"] ?? ""}",
           ),
         ]);
       }

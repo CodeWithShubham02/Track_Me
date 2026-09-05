@@ -1826,6 +1826,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
               () => Get.to(
                 () => OfficeAttendanceScreen(
               officeName: widget.userModel.branchName,
+                  userModel:widget.userModel
             ),
           ),
         ),

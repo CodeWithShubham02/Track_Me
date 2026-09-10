@@ -5,7 +5,7 @@ Future<Map<String, dynamic>> startBreakApi({
   required String attendanceId,
   required String uid,
 }) async {
-  final url = Uri.parse("http://15.206.209.30/attendance/attendance_break_start.php");
+  final url = Uri.parse("https://trackme.joizone.com/attendance/attendance_break_start.php");
 
   final response = await http.post(
     url,
@@ -27,7 +27,7 @@ Future<Map<String, dynamic>> endBreakApi({
   required String attendanceId,
   required String uid,
 }) async {
-  final url = Uri.parse("http://15.206.209.30/attendance/attendance_break_end.php");
+  final url = Uri.parse("https://trackme.joizone.com/attendance/attendance_break_end.php");
 
   final response = await http.post(
     url,

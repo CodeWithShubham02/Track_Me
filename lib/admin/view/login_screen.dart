@@ -25,11 +25,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  String selectedRole = 'user';
+  String selectedRole = 'admin';
   final UserController userController=UserController();
   final TextEditingController userIdCtrl = TextEditingController();
   final TextEditingController passwordCtrl = TextEditingController();
-NotificationService notificationService=NotificationService();
+  NotificationService notificationService=NotificationService();
   final TextEditingController userId = TextEditingController();
   final TextEditingController userPassword = TextEditingController();
   bool isLoading = false;
@@ -360,7 +360,7 @@ NotificationService notificationService=NotificationService();
   Future<bool> isAttendanceActive(String attendanceId) async {
     try {
       final response = await http.post(
-        Uri.parse("http://15.206.209.30/attendance/check_status.php"),
+        Uri.parse("https://trackme.joizone.com/attendance/check_status.php"),
         body: {
           "attendance_id": attendanceId,
         },
@@ -469,13 +469,13 @@ NotificationService notificationService=NotificationService();
     setState(() => isLoading = true);
 
     final response = await http.post(
-      Uri.parse("http://15.206.209.30/attendance/login.php"), // localhost fix
+      Uri.parse("https://trackme.joizone.com/attendance/login.php"), // localhost fix
       body: {
         "user_id": userIdCtrl.text,
         "password": passwordCtrl.text,
       },
     );
-    print(response);
+    print("=================login=====================");
     final data = json.decode(response.body);
     print(data);
     setState(() => isLoading = false);
@@ -735,7 +735,7 @@ NotificationService notificationService=NotificationService();
                       const SizedBox(height: 15),
 
                       Text(
-                        "Version 1.0.2",
+                        "Version 1.1.3",
                         style: TextStyle(
                           color: Colors.grey.shade600,
                         ),

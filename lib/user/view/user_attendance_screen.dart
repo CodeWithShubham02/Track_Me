@@ -169,7 +169,7 @@ class _OfficeAttendanceScreenState extends State<OfficeAttendanceScreen> {
     required DateTime date,
   }) async {
     final response = await http.post(
-      Uri.parse("http://15.206.209.30/attendance/updateHoliday.php"),
+      Uri.parse("https://trackme.joizone.com/attendance/updateHoliday.php"),
       body: {
         "id": id,
         "date": DateFormat('yyyy-MM-dd').format(date),

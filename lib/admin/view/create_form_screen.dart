@@ -30,7 +30,7 @@ class _CreateFormScreenState extends State<CreateFormScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-          "http://15.206.209.30/attendance/get_templates.php?cid=${widget.cid}",
+          "https://trackme.joizone.com/attendance/get_templates.php?cid=${widget.cid}",
         ),
       );
 
@@ -142,7 +142,7 @@ class _CreateFormScreenState extends State<CreateFormScreen> {
 
     final response = await http.post(
       Uri.parse(
-        "http://15.206.209.30/attendance/update_form_status.php",
+        "https://trackme.joizone.com/attendance/update_form_status.php",
       ),
       body: {
         "template_id": templateId,

@@ -77,7 +77,7 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
 
     final response = await http.get(
       Uri.parse(
-          "http://15.206.209.30/attendance/location_history.php?uid=${selectedUser!.uid}&date=$formattedDate"),
+          "https://trackme.joizone.com/attendance/location_history.php?uid=${selectedUser!.uid}&date=$formattedDate"),
     );
 
     final data = jsonDecode(response.body);

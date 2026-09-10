@@ -33,20 +33,20 @@ class AllFormReportScreen extends StatefulWidget {
 }
 
 class _AllFormReportScreenState extends State<AllFormReportScreen> {
-  late Future<List<ClientFormReportModel>> reportsFuture;
+
 
   final ScrollController _verticalController = ScrollController();
   final ScrollController _horizontalController = ScrollController();
+  DateTime? selectedFromDate;
+  DateTime? selectedToDate;
 
+  late Future<List<ClientFormReportModel>> reportsFuture;
   @override
   void initState() {
     super.initState();
+    // Initial
     reportsFuture = ReportController.fetchReports(widget.cid);
-    print("=============");
-    print("=============");
-    print(reportsFuture);
-    print("=============");
-    print("=============");
+
   }
   int rowsPerPage = 10;
   int currentPage = 0;
@@ -204,82 +204,323 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
       },
     );
   }
-  Future<void> _confirmAndUpdateDuplicate(ClientFormReportModel report) async {
-    bool confirmed =
+  Future<void> _confirmAndUpdateDuplicate(
+      ClientFormReportModel report) async {
+
+    // ==========================================================
+    // CONFIRMATION DIALOG
+    // ==========================================================
+
+    final bool confirmed =
         await showDialog<bool>(
           context: context,
-          builder: (_) => AlertDialog(
-            title: const Text("Form as Inactive?"),
-            content: const Text(
-              "Are you sure you want to inactive?",
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("No"),
+          builder: (dialogContext) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text("Yes"),
+
+              title: const Row(
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: Color(0xFFF59E0B),
+                    size: 26,
+                  ),
+                  SizedBox(width: 10),
+                  Text(
+                    "Form as Inactive?",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+
+              content: const Text(
+                "Are you sure you want to mark this form as inactive?",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF4B5563),
+                ),
+              ),
+
+              actionsPadding: const EdgeInsets.fromLTRB(
+                16,
+                0,
+                16,
+                14,
+              ),
+
+              actions: [
+
+                // NO
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(
+                      dialogContext,
+                      false,
+                    );
+                  },
+                  child: const Text(
+                    "No",
+                    style: TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                // YES
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(
+                      dialogContext,
+                      true,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                    const Color(0xFFDC2626),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                  ),
+                  child: const Text(
+                    "Yes, Inactive",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ) ??
             false;
 
+    // User clicked No
     if (!confirmed) return;
 
-    // Loader message
+    // ==========================================================
+    // SHOW LOADING
+    // ==========================================================
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Updating...")),
+      SnackBar(
+        content: Row(
+          children: const [
+            SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor:
+                AlwaysStoppedAnimation<Color>(
+                  Colors.white,
+                ),
+              ),
+            ),
+
+            SizedBox(width: 12),
+
+            Expanded(
+              child: Text(
+                "Updating form...",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        backgroundColor:
+        const Color(0xFF2563EB),
+
+        behavior:
+        SnackBarBehavior.floating,
+
+        margin:
+        const EdgeInsets.all(16),
+
+        shape:
+        RoundedRectangleBorder(
+          borderRadius:
+          BorderRadius.circular(10),
+        ),
+
+        duration:
+        const Duration(seconds: 2),
+      ),
     );
 
-    bool success = await ReportController.updateDuplicate(
+    // ==========================================================
+    // UPDATE API
+    // ==========================================================
+
+    final bool success =
+    await ReportController.updateDuplicate(
       id: report.id,
-      duplicateFrom: "yes", // ✅ correct value
+      duplicateFrom: "yes",
     );
+
+    // ==========================================================
+    // SUCCESS
+    // ==========================================================
 
     if (success) {
-      setState(() {
-        reportsFuture = ReportController.fetchReports(widget.cid); // 🔥 refresh
-      });
+
+      // Remove old loading snackbar
+      ScaffoldMessenger.of(context)
+          .hideCurrentSnackBar();
+
+      // Refresh SAME selected date/date range
+      refreshReports();
+
+      // Success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: const [
+              Icon(
+                Icons.check_circle_outline,
+                color: Colors.white,
+                size: 22,
+              ),
+
+              SizedBox(width: 10),
+
+              Expanded(
+                child: Text(
+                  "Form has been marked inactive successfully.",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          backgroundColor:
+          const Color(0xFF16A34A),
+
+          behavior:
+          SnackBarBehavior.floating,
+
+          margin:
+          const EdgeInsets.all(16),
+
+          shape:
+          RoundedRectangleBorder(
+            borderRadius:
+            BorderRadius.circular(10),
+          ),
+
+          duration:
+          const Duration(seconds: 3),
+        ),
+      );
+
+    }
+
+    // ==========================================================
+    // FAILED
+    // ==========================================================
+
+    else {
+
+      ScaffoldMessenger.of(context)
+          .hideCurrentSnackBar();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Form updated successfully")),
+        SnackBar(
+          content: Row(
+            children: const [
+              Icon(
+                Icons.error_outline,
+                color: Colors.white,
+                size: 22,
+              ),
+
+              SizedBox(width: 10),
+
+              Expanded(
+                child: Text(
+                  "Failed to deactivate the form. Please try again.",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          backgroundColor:
+          const Color(0xFFDC2626),
+
+          behavior:
+          SnackBarBehavior.floating,
+
+          margin:
+          const EdgeInsets.all(16),
+
+          shape:
+          RoundedRectangleBorder(
+            borderRadius:
+            BorderRadius.circular(10),
+          ),
+
+          duration:
+          const Duration(seconds: 3),
+        ),
       );
     }
   }
 
-  DateTime? selectedDate;
   Future<void> _pickDateAndFetchReports() async {
-    final DateTimeRange? pickedRange = await showDateRangePicker(
+    final picked = await showDateRangePicker(
       context: context,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-      saveText: "Submit",
-      initialDateRange: DateTimeRange(
-        start: DateTime.now().subtract(Duration(days: 2)),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange:
+      selectedFromDate != null && selectedToDate != null
+          ? DateTimeRange(
+        start: selectedFromDate!,
+        end: selectedToDate!,
+      )
+          : DateTimeRange(
+        start: DateTime.now(),
         end: DateTime.now(),
       ),
     );
 
-    if (pickedRange != null) {
-      String fromDate =
-          "${pickedRange.start.year}-${pickedRange.start.month.toString().padLeft(2, '0')}-${pickedRange.start.day.toString().padLeft(2, '0')}";
+    if (picked == null) return;
 
-      String toDate =
-          "${pickedRange.end.year}-${pickedRange.end.month.toString().padLeft(2, '0')}-${pickedRange.end.day.toString().padLeft(2, '0')}";
+    setState(() {
+      selectedFromDate = picked.start;
+      selectedToDate = picked.end;
 
-      setState(() {
-        reportsFuture = ReportController.fetchReports1(
-          fromDate: fromDate,
-          toDate: toDate,
-          cid: widget.cid,
-        );
-      });
-    }
+      currentPage = 0;
+
+      reportsFuture = ReportController.fetchReports1(
+        fromDate: DateFormat('yyyy-MM-dd').format(picked.start),
+        toDate: DateFormat('yyyy-MM-dd').format(picked.end),
+        cid: widget.cid,
+      );
+    });
   }
-
+//jab date range user select karta hai tab uska date range store hona chahiye uske screen par and if user next screen par jaata hai and return usi screen par aata hai to vhi date
+  //select hona chahiye jab user proper back jaata hai to remove ho jaana chahiye date range
   Future<String> getAddressFromLatLng(String gps) async {
     try {
       if (gps.isEmpty) return "Location not available";
@@ -573,6 +814,24 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
     }
   }
 
+  void refreshReports() {
+    if (selectedFromDate != null && selectedToDate != null) {
+      reportsFuture = ReportController.fetchReports1(
+        fromDate: DateFormat('yyyy-MM-dd')
+            .format(selectedFromDate!),
+        toDate: DateFormat('yyyy-MM-dd')
+            .format(selectedToDate!),
+        cid: widget.cid,
+      );
+    } else {
+      reportsFuture =
+          ReportController.fetchReports(widget.cid);
+    }
+
+    currentPage = 0;
+
+    setState(() {});
+  }
   //edit form
   final List<String> statusList = [
     "Rejected",
@@ -597,147 +856,535 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
     final remarksController = TextEditingController(text: report.remarks);
     TextEditingController managerRemark = TextEditingController(text: report.managerRemarks);
 
-    Get.defaultDialog(
-      title: "Edit Client Form",
-      content: SizedBox(
-        width: 400,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 10,),
-              TextField(
-                controller: applicationController,
-                decoration: const InputDecoration(
-                  labelText: "Application Number",
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.white,
+        elevation: 12,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 520,
+            maxHeight: 700,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // ================= HEADER =================
+
+                Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.edit_rounded,
+                        color: Color(0xFF2563EB),
+                        size: 25,
+                      ),
+                    ),
+
+                    const SizedBox(width: 14),
+
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Edit Client Form",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF111827),
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            "Update client application details",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    InkWell(
+                      onTap: () => Get.back(),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          size: 19,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(height: 10,),
-              SizedBox(height: 10,),
-              DropdownButtonFormField<String>(
-                initialValue: report.relation,
-                value: selectedRelationListRemark, //yha par selected ho after click show the dropdown report.relation
-                decoration: const InputDecoration(
-                  labelText: "Relation",
-                  border: OutlineInputBorder(),
+
+                const SizedBox(height: 20),
+
+                const Divider(
+                  color: Color(0xFFE5E7EB),
+                  height: 1,
                 ),
-                hint: const Text("Select Relation"),
-                items: relationList.map((status) {
-                  return DropdownMenuItem<String>(
-                    value: status,
-                    child: Text(status.toUpperCase()),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedRelationListRemark = value;
-                    relationController.text = value!;
-                  });
-                },
-              ),
-              SizedBox(height: 10,),
-              SizedBox(height: 10,),
-              DropdownButtonFormField<String>(
-                initialValue: report.variant,
-                value: selectedVariantListRemark,
-                decoration: const InputDecoration(
-                  labelText: "Variant",
-                  border: OutlineInputBorder(),
-                ),
-                hint: const Text("Select Variant"),
-                items: variantList.map((status) {
-                  return DropdownMenuItem<String>(
-                    value: status,
-                    child: Text(status.toUpperCase()),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedVariantListRemark = value;
-                    variantController.text = value!;
-                  });
-                },
-              ),
-              SizedBox(height: 10,),
-              SizedBox(height: 10,),
-              DropdownButtonFormField<String>(
-                initialValue: report.status,
-                value: selectedStatusRemark,
-                decoration: const InputDecoration(
-                  labelText: "Status",
-                  border: OutlineInputBorder(),
-                ),
-                hint: const Text("Select Status"),
-                items: statusList.map((status) {
-                  return DropdownMenuItem<String>(
-                    value: status,
-                    child: Text(status.toUpperCase()),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedStatusRemark = value;
-                    statusController.text = value!;
-                  });
-                },
-              ),
-              SizedBox(height: 10,),
-              SizedBox(height: 10,),
-              TextField(
-                controller: remarksController,
-                decoration: const InputDecoration(labelText: "Remarks"),
-              ),
-              SizedBox(height: 10,),
-              TextField(
-                controller: managerRemark,
-                decoration: const InputDecoration(labelText: "Manager Remark"),
-              ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      Get.back();
-                    },
-                    child: const Text("Cancel"),
+
+                const SizedBox(height: 22),
+
+                // ================= APPLICATION NUMBER =================
+
+                const Text(
+                  "Application Details",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
                   ),
-                  SizedBox(width: 50,),
-                  ElevatedButton(
-                    onPressed: () async {
-                      bool success = await ReportController.updateFormDetails(
-                        id: report.id,
-                        applicationNo: applicationController.text,
-                        relation: relationController.text,
-                        variant: variantController.text,
-                        status: statusController.text,
-                        remarks: remarksController.text,
-                        managerRemark: managerRemark.text,
-                      );
+                ),
 
-                      if (success) {
-                        Get.back(); // close dialog
+                const SizedBox(height: 12),
 
-                        setState(() {
-                          reportsFuture = ReportController.fetchReports(widget.cid);
-                        });
-                        Get.snackbar(
-                          "Success updated...",
-                          "Successfully updated manager remark...",
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
-                      } else {
-                        Get.snackbar(
-                          "Error",
-                          "Update failed",
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
-                      }
-                    },
-                    child: const Text("Update"),
+                TextField(
+                  controller: applicationController,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF111827),
                   ),
+                  decoration: InputDecoration(
+                    labelText: "Application Number",
+                    hintText: "Enter application number",
+                    prefixIcon: const Icon(
+                      Icons.confirmation_number_outlined,
+                      size: 20,
+                      color: Color(0xFF6B7280),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF9FAFB),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 15,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF2563EB),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
 
-                ],
-              ),
-            ],
+                const SizedBox(height: 18),
+
+                // ================= RELATION =================
+
+                DropdownButtonFormField<String>(
+                  value: report.relation,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    labelText: "Relation",
+                    prefixIcon: const Icon(
+                      Icons.people_outline_rounded,
+                      size: 20,
+                      color: Color(0xFF6B7280),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF9FAFB),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 15,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF2563EB),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  hint: const Text("Select Relation"),
+                  items: relationList.map((status) {
+                    return DropdownMenuItem<String>(
+                      value: status,
+                      child: Text(
+                        status.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedRelationListRemark = value;
+                      relationController.text = value ?? "";
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // ================= VARIANT =================
+
+                DropdownButtonFormField<String>(
+                  value: report.variant,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    labelText: "Variant",
+                    prefixIcon: const Icon(
+                      Icons.category_outlined,
+                      size: 20,
+                      color: Color(0xFF6B7280),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF9FAFB),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 15,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF2563EB),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  hint: const Text("Select Variant"),
+                  items: variantList.map((status) {
+                    return DropdownMenuItem<String>(
+                      value: status,
+                      child: Text(
+                        status.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedVariantListRemark = value;
+                      variantController.text = value ?? "";
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // ================= STATUS =================
+
+                DropdownButtonFormField<String>(
+                  value: report.status,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    labelText: "Status",
+                    prefixIcon: const Icon(
+                      Icons.flag_outlined,
+                      size: 20,
+                      color: Color(0xFF6B7280),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF9FAFB),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 15,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF2563EB),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  hint: const Text("Select Status"),
+                  items: statusList.map((status) {
+                    return DropdownMenuItem<String>(
+                      value: status,
+                      child: Text(
+                        status.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedStatusRemark = value;
+                      statusController.text = value ?? "";
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 18),
+
+                // ================= REMARKS =================
+
+                TextField(
+                  controller: remarksController,
+                  maxLines: 3,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF111827),
+                  ),
+                  decoration: InputDecoration(
+                    labelText: "Remarks",
+                    hintText: "Enter remarks",
+                    alignLabelWithHint: true,
+                    prefixIcon: const Padding(
+                      padding: EdgeInsets.only(bottom: 35),
+                      child: Icon(
+                        Icons.notes_rounded,
+                        size: 20,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF9FAFB),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF2563EB),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // ================= MANAGER REMARK =================
+
+                TextField(
+                  controller: managerRemark,
+                  maxLines: 3,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF111827),
+                  ),
+                  decoration: InputDecoration(
+                    labelText: "Manager Remark",
+                    hintText: "Enter manager remark",
+                    alignLabelWithHint: true,
+                    prefixIcon: const Padding(
+                      padding: EdgeInsets.only(bottom: 35),
+                      child: Icon(
+                        Icons.manage_accounts_outlined,
+                        size: 20,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF9FAFB),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF2563EB),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                // ================= BUTTONS =================
+
+                Row(
+                  children: [
+
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Get.back();
+                        },
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 48),
+                          side: const BorderSide(
+                            color: Color(0xFFD1D5DB),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+                        ),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(
+                            color: Color(0xFF374151),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+
+                          bool success =
+                          await ReportController.updateFormDetails(
+                            id: report.id,
+                            applicationNo:
+                            applicationController.text.trim(),
+                            relation:
+                            relationController.text.trim(),
+                            variant:
+                            variantController.text.trim(),
+                            status:
+                            statusController.text.trim(),
+                            remarks:
+                            remarksController.text.trim(),
+                            managerRemark:
+                            managerRemark.text.trim(),
+                          );
+
+                          if (success) {
+                            Get.back();
+
+                            refreshReports();
+
+                            Get.snackbar(
+                              "Success",
+                              "Client form updated successfully.",
+                              snackPosition: SnackPosition.BOTTOM,
+                            );
+                          } else {
+
+                            Get.snackbar(
+                              "Update Failed",
+                              "Unable to update the client form.",
+                              snackPosition: SnackPosition.BOTTOM,
+                              margin: const EdgeInsets.all(12),
+                              borderRadius: 10,
+                              backgroundColor:
+                              const Color(0xFFDC2626),
+                              colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.error_outline,
+                                color: Colors.white,
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.save_rounded,
+                          size: 18,
+                        ),
+                        label: const Text(
+                          "Update",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 48),
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1224,13 +1871,28 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
           style: TextStyle(color: Colors.white, fontSize: 18),
         ),
         actions: [
-          ElevatedButton(onPressed: (){
-            Get.to(() => DuplicateFormScreen(cid:widget.cid));
-          }, style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5), // Perfect square corners
+
+          SizedBox(width: 20,),
+          ElevatedButton(
+            onPressed: () async {
+              await Get.to(
+                    () => DuplicateFormScreen(
+                  cid: widget.cid,
+                ),
+              );
+
+              // User returned from inactive screen
+              if (mounted) {
+                refreshReports();
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
             ),
-          ),child: Text("Inactive Forms")),// Get.to(()=>ShiftScreen(cid:widget.cid));
+            child: const Text("Inactive Forms"),
+          ),// Get.to(()=>ShiftScreen(cid:widget.cid));
           SizedBox(
             width: 10,
           ),
@@ -1325,9 +1987,47 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
           SizedBox(
             width: 10,
           ),
-          IconButton(
-            onPressed: _pickDateAndFetchReports,
-            icon: Icon(Icons.calendar_month, color: Colors.white),
+
+          InkWell(
+            onTap: _pickDateAndFetchReports,
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 11,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.white,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.calendar_month_rounded,
+                    size: 19,
+                    color: Color(0xFF2563EB),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  Text(
+                    selectedFromDate != null &&
+                        selectedToDate != null
+                        ? "${DateFormat('dd-MM-yyyy').format(selectedFromDate!)}"
+                        " → "
+                        "${DateFormat('dd-MM-yyyy').format(selectedToDate!)}"
+                        : "Select Date Range",
+
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF374151),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           SizedBox(
             width: 10,

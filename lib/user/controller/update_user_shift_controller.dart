@@ -11,7 +11,7 @@ class UpdateUserShiftController {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse("http://15.206.209.30/attendance/update_user_shift.php"),
+        Uri.parse("https://trackme.joizone.com/attendance/update_user_shift.php"),
         body: {
           "cid": cid,
           "uid": uid,

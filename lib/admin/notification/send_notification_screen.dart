@@ -300,7 +300,7 @@ class _SendNotificationScreenState extends State<SendNotificationScreen> {
       print("BRANCH : $branchName");
       final response = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/save_notification.php",
+          "https://trackme.joizone.com/attendance/save_notification.php",
         ),
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

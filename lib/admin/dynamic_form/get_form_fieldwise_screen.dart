@@ -36,7 +36,7 @@ class _GetFormFieldwiseScreenState extends State<GetFormFieldwiseScreen> {
 
     final response = await http.get(
       Uri.parse(
-        "http://15.206.209.30/attendance/get_form_fieldwise_report.php"
+        "https://trackme.joizone.com/attendance/get_form_fieldwise_report.php"
             "?cid=${widget.cid}"
             "&template_id=${widget.templateId}"
             "&from_date=$fromDate"
@@ -312,7 +312,7 @@ class _GetFormFieldwiseScreenState extends State<GetFormFieldwiseScreen> {
 
       final response = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/update_dynamic_form.php",
+          "https://trackme.joizone.com/attendance/update_dynamic_form.php",
         ),
         body: {
           "submission_id": submissionId,

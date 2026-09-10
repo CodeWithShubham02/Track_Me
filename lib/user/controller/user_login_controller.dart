@@ -8,8 +8,8 @@ import 'package:http/http.dart' as http;
 
 class UserController {
   final String baseUrl =
-      "http://15.206.209.30/attendance";
-
+      "https://trackme.joizone.com/attendance";
+ // http://trackme.joizone.com/trackme/
   // =========================================================
   // DEVICE ID
   // =========================================================
@@ -296,71 +296,145 @@ class UserController {
       // =====================================================
 
       if (result["status"] == true) {
-
         final Map<String, dynamic> data =
         Map<String, dynamic>.from(
           result["data"] ?? {},
         );
 
-        // ===================================================
+        debugPrint("========================================");
+        debugPrint("           LOGIN USER DATA");
+        debugPrint("========================================");
+
+        // =====================================================
+        // BASIC USER DETAILS
+        // =====================================================
+
+        debugPrint("UID              : ${data["uid"]}");
+        debugPrint("CID              : ${data["cid"]}");
+        debugPrint("USER ID          : ${data["userid"]}");
+        debugPrint("USER TOKEN       : ${data["user_token"]}");
+
+        // =====================================================
+        // NAME
+        // =====================================================
+
+        debugPrint("FULL NAME        : ${data["full_name"]}");
+        debugPrint("FIRST NAME       : ${data["first_name"]}");
+        debugPrint("MIDDLE NAME      : ${data["middle_name"]}");
+        debugPrint("LAST NAME        : ${data["last_name"]}");
+
+        // =====================================================
+        // CONTACT
+        // =====================================================
+
+        debugPrint("EMAIL            : ${data["user_email"]}");
+        debugPrint("PHONE            : ${data["user_phone"]}");
+
+        // =====================================================
+        // ROLE / DEPARTMENT
+        // =====================================================
+
+        debugPrint("ROLE             : ${data["role"]}");
+        debugPrint("ROLE NAME        : ${data["rolename"]}");
+        debugPrint("DEPARTMENT ID    : ${data["department_id"]}");
+        debugPrint("DEPARTMENT NAME  : ${data["department_name"]}");
+
+        // =====================================================
+        // PRIMARY BRANCH
+        // =====================================================
+
+        debugPrint("========================================");
+        debugPrint("           PRIMARY BRANCH");
+        debugPrint("========================================");
+
+        debugPrint("BRANCH ID        : ${data["branch_id"]}");
+        debugPrint("BRANCH NAME      : ${data["branch_name"]}");
+        debugPrint("BRANCH DISTANCE  : ${data["branch_distance"]}");
+        debugPrint("BRANCH LAT       : ${data["branch_lat"]}");
+        debugPrint("BRANCH LONG      : ${data["branch_long"]}");
+
+        // =====================================================
+        // SHIFT
+        // =====================================================
+
+        debugPrint("========================================");
+        debugPrint("                SHIFT");
+        debugPrint("========================================");
+
+        debugPrint("SHIFT ID         : ${data["shift_id"]}");
+        debugPrint("SHIFT START      : ${data["shift_start"]}");
+        debugPrint("SHIFT END        : ${data["shift_end"]}");
+
+        // =====================================================
+        // OTHER DETAILS
+        // =====================================================
+
+        debugPrint("========================================");
+        debugPrint("             OTHER DETAILS");
+        debugPrint("========================================");
+
+        debugPrint("DATE OF JOINING  : ${data["date_of_joining"]}");
+        debugPrint("LAST WORKING     : ${data["last_working_date"]}");
+        debugPrint("CITY             : ${data["city_name"]}");
+        debugPrint("PIN CODE         : ${data["pin_code"]}");
+        debugPrint("DISTRICT         : ${data["district_name"]}");
+        debugPrint("REPORTING POS    : ${data["reporting_position"]}");
+
+        // =====================================================
+        // IMAGE
+        // =====================================================
+
+        debugPrint("USER IMAGE       : ${data["user_image"]}");
+        debugPrint("IMAGE            : ${data["image"]}");
+
+        // =====================================================
         // BRANCH MAP
-        // ===================================================
+        // =====================================================
 
         final List<dynamic> rawBranchMap =
             data["branch_map"] ?? [];
 
-        debugPrint(
-          "================================",
-        );
+        debugPrint("========================================");
+        debugPrint("              BRANCH MAP");
+        debugPrint("========================================");
 
         debugPrint(
-          "TOTAL BRANCHES: "
-              "${rawBranchMap.length}",
+          "BRANCH COUNT     : ${rawBranchMap.length}",
         );
 
-        for (final item in rawBranchMap) {
+        if (rawBranchMap.isEmpty) {
+          debugPrint("BRANCH MAP       : EMPTY");
+        } else {
+          for (int i = 0; i < rawBranchMap.length; i++) {
+            final item = rawBranchMap[i];
 
-          final branch =
-          Map<String, dynamic>.from(item);
+            final branch =
+            Map<String, dynamic>.from(item);
 
-          debugPrint(
-            "--------------------------------",
-          );
-
-          debugPrint(
-            "Branch ID: "
-                "${branch["branch_id"]}",
-          );
-
-          debugPrint(
-            "Branch Name: "
-                "${branch["branch_name"]}",
-          );
-
-          debugPrint(
-            "Branch Latitude: "
-                "${branch["branch_lat"]}",
-          );
-
-          debugPrint(
-            "Branch Longitude: "
-                "${branch["branch_long"]}",
-          );
-
-          debugPrint(
-            "Branch Distance: "
-                "${branch["branch_distance"]}",
-          );
-
-          debugPrint(
-            "Branch Status: "
-                "${branch["status"]}",
-          );
+            debugPrint("----------------------------------------");
+            debugPrint("BRANCH #${i + 1}");
+            debugPrint("ID               : ${branch["id"]}");
+            debugPrint("UID              : ${branch["uid"]}");
+            debugPrint("CID              : ${branch["cid"]}");
+            debugPrint("BRANCH ID        : ${branch["branch_id"]}");
+            debugPrint("BRANCH NAME      : ${branch["branch_name"]}");
+            debugPrint("DISTANCE         : ${branch["branch_distance"]}");
+            debugPrint("LAT              : ${branch["branch_lat"]}");
+            debugPrint("LONG             : ${branch["branch_long"]}");
+            debugPrint("STATUS           : ${branch["status"]}");
+          }
         }
 
+        debugPrint("========================================");
+        debugPrint("          COMPLETE API DATA");
+        debugPrint("========================================");
+
         debugPrint(
-          "================================",
+          const JsonEncoder.withIndent("  ")
+              .convert(data),
         );
+
+        debugPrint("========================================");
       }
 
       return result;

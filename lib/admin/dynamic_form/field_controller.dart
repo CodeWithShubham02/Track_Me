@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class FieldController {
   static const String baseUrl =
-      "http://15.206.209.30/attendance";
+      "https://trackme.joizone.com/attendance";
 
   /// Add Field
   static Future<bool> addField({

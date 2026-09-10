@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../model/branch_model.dart';
 
 class BranchController {
-  final String baseUrl = "http://15.206.209.30/attendance";
+  final String baseUrl = "https://trackme.joizone.com/attendance";
 
   /// GET BRANCH LIST
   Future<List<BranchModel>> getBranches(String cid) async {

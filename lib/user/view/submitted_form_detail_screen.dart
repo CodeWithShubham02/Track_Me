@@ -40,7 +40,7 @@ class _SubmittedFormDetailScreenState
 
       final response = await http.get(
         Uri.parse(
-          "http://15.206.209.30/attendance/get_dynamic_form_details.php?submission_id=${widget.submissionId}",
+          "https://trackme.joizone.com/attendance/get_dynamic_form_details.php?submission_id=${widget.submissionId}",
         ),
       );
       print("=======================================================");

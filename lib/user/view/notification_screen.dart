@@ -33,7 +33,7 @@ class _NotificationScreenState
     try {
       final response = await http.get(
         Uri.parse(
-          "http://15.206.209.30/attendance/get_notification.php?cid=${widget.cid}&uid=${widget.uid}",
+          "https://trackme.joizone.com/attendance/get_notification.php?cid=${widget.cid}&uid=${widget.uid}",
         ),
       );
 
@@ -56,7 +56,7 @@ class _NotificationScreenState
     try {
       final response = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/update_notification_status.php",
+          "https://trackme.joizone.com/attendance/update_notification_status.php",
         ),
         body: {
           "id": id,

@@ -508,7 +508,7 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
   Future<void> callDeleteApi(String uid) async {
     try {
       final url = Uri.parse(
-          "http://15.206.209.30/attendance/delete_user.php");
+          "https://trackme.joizone.com/attendance/delete_user.php");
 
       final response = await http.post(
         url,

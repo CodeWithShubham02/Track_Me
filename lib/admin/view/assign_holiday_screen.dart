@@ -552,7 +552,7 @@ class _AssignHolidayScreenState
 
       final response = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/user_holiday.php",
+          "https://trackme.joizone.com/attendance/user_holiday.php",
         ),
         headers: {
           "Content-Type": "application/json",
@@ -710,7 +710,7 @@ class _AssignHolidayScreenState
     try {
       final response = await http.get(
         Uri.parse(
-          "http://15.206.209.30/attendance/"
+          "https://trackme.joizone.com/attendance/"
               "get_users_cid.php?cid=${widget.cid}",
         ),
       );

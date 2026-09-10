@@ -39,7 +39,7 @@ class _UploadRemarkScreenState extends State<UploadRemarkScreen> {
     try {
 
       var response = await http.post(
-        Uri.parse("http://15.206.209.30/attendance/update_excel_remark.php"),
+        Uri.parse("https://trackme.joizone.com/attendance/update_excel_remark.php"),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json"

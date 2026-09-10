@@ -21,6 +21,8 @@ import 'package:permission_handler/permission_handler.dart' hide Permission;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../admin/controller/shift_controller.dart';
+import '../../admin/model/shift_model.dart';
 import '../../handller/encription_decription.dart';
 
 class PunchInOutScreen extends StatefulWidget {
@@ -62,7 +64,7 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
     print(widget.userModel.cid);
     print("--------");
     loadLiveLocation();
-
+    fetchShifts();
     officeRange =
         double.tryParse(widget.userModel.branchDistance.toString()) ?? 0.0;
 
@@ -447,9 +449,9 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
       }
     }
 
-    final allowedStart = start.subtract(const Duration(minutes: 360));
+    final allowedStart = start.subtract(const Duration(minutes: 480));
     // final presentLimit = start.add(const Duration(minutes: 10));
-    final onTimeLimit = start.add(Duration(minutes: 10));
+    final onTimeLimit = start.add(Duration(minutes: 5));
     final halfDayLimit = start.add(Duration(hours: 2));
     // ❌ Too early
     if (now.isBefore(allowedStart)) {
@@ -531,7 +533,7 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
       await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
+          "https://trackme.joizone.com/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
         ),
         body: {
           "action": "punch_out",
@@ -584,7 +586,7 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
           final res = await http.post(
             Uri.parse(
-              "http://15.206.209.30/attendance/track_location.php",
+              "https://trackme.joizone.com/attendance/track_location.php",
             ),
             body: {
               "attendance_id": attendanceId!,
@@ -613,7 +615,7 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
     // 2️⃣ Fetch employee shift from API
     final empRes = await http.post(
-      Uri.parse("http://15.206.209.30/attendance/get_users.php"),
+      Uri.parse("https://trackme.joizone.com/attendance/get_users.php"),
       body: {
         "uid": widget.userModel.uid,
         "cid": widget.userModel.cid,
@@ -646,10 +648,29 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
     print(status['late']);
     print(status['late'].toString());
     print("-----------------");
+    final isTeamLeader =
+        widget.userModel.departmentName.toString()== "Team Leader";
+
+    // ⭐ Sirf Team Leader ke liye shift compulsory
+    if (isTeamLeader) {
+      if (selectedShiftStart == null ||
+          selectedShiftEnd == null) {
+        throw "Please select shift";
+      }
+    }
+    print("========== SHIFT DEBUG ==========");
+    print("Department: '${widget.userModel.departmentName}'");
+    print("Is Team Leader: $isTeamLeader");
+    print("Selected Shift Start: $selectedShiftStart");
+    print("Selected Shift End: $selectedShiftEnd");
+    print("User Shift Start: ${widget.userModel.shiftStart}");
+    print("User Shift End: ${widget.userModel.shiftEnd}");
+    print("=================================");
+    print("shift");
 
     // 4️⃣ Call Punch-In API
     final res = await http.post(
-      Uri.parse("http://15.206.209.30/attendance/attendance_punch_in.php"),
+      Uri.parse("https://trackme.joizone.com/attendance/attendance_punch_in.php"),
       body: {
         "uid": widget.userModel.uid,
         "cid": widget.userModel.cid,
@@ -661,15 +682,22 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
         "name": widget.userModel.fullName,
         //"office_name": widget.userModel.branchName,
         "office_name": selectBranchName.toString(),
-        "shift_start": widget.userModel.shiftStart,
-        "shift_end": widget.userModel.shiftEnd,
+
+        "shift_start": isTeamLeader
+            ? selectedShiftStart!
+            : widget.userModel.shiftStart,
+
+        "shift_end": isTeamLeader
+            ? selectedShiftEnd!
+            : widget.userModel.shiftEnd,
+
         "lat": currentPosition!.latitude.toString(),
         "lng": currentPosition!.longitude.toString(),
         "remark": remarkCtrl.text,
         "image":  photoUrl ?? "", // multipart later
       },
     );
-
+print(res);
     final data = jsonDecode(res.body);
     print("------------punch in api -------");
     print(res);
@@ -707,8 +735,53 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
       service.startService();
     }
   }
+  //-------shift
+  final ShiftController shiftController = ShiftController();
 
+  List<ShiftModel> shifts = [];
 
+  String? selectedShiftId;
+  String? selectedShiftStart;
+  String? selectedShiftEnd;
+
+  bool isShiftLoading = false;
+
+  Future<void> fetchShifts() async {
+    try {
+      setState(() {
+        isShiftLoading = true;
+      });
+
+      final result = await shiftController.fetchShifts(
+        widget.userModel.cid,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        shifts = result;
+      });
+
+      print("========== SHIFTS ==========");
+      for (final shift in shifts) {
+        print(
+          "ID: ${shift.shiftId}, "
+              "Start: ${shift.shiftStart}, "
+              "End: ${shift.shiftEnd}",
+        );
+      }
+      print("=============================");
+    } catch (e) {
+      print("Shift fetch error: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          isShiftLoading = false;
+        });
+      }
+    }
+  }
+  //----end shift
   Future<void> stopLocationTracking() async {
     // 🚨 FIRST LINE (MOST IMPORTANT)
     isTrackingActive = false;
@@ -721,7 +794,7 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
     try {
       await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/track_location.php",
+          "https://trackme.joizone.com/attendance/track_location.php",
         ),
         body: {
           "attendance_id": attendanceId!,
@@ -783,7 +856,7 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
       final res = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/attendance_punch_out.php"
+          "https://trackme.joizone.com/attendance/attendance_punch_out.php"
               "?attendance_id=$attendanceId",
         ),
         body: {
@@ -984,7 +1057,9 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
+            widget.userModel.departmentName=="Team Leader"?shiftDropdown():SizedBox.shrink(),
+            const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.all(12),
               child: TextField(
@@ -1136,6 +1211,99 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
             const SizedBox(height: 30),
           ],
         ),
+      ),
+    );
+  }
+  Widget shiftDropdown() {
+    if (isShiftLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 10),
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    String formatTime(String time) {
+      final parsedTime = DateFormat('HH:mm:ss').parse(time);
+      return DateFormat('hh:mm a').format(parsedTime);
+    }
+
+    if (shifts.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 10),
+        child: Text(
+          "No shifts available",
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: DropdownButtonFormField<String>(
+        value: selectedShiftId,
+
+        decoration: InputDecoration(
+          labelText: "Select Shift",
+          hintText: "Select your shift",
+          prefixIcon: const Icon(Icons.access_time),
+
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(
+              width: 2,
+            ),
+          ),
+        ),
+
+        items: shifts.map((shift) {
+          return DropdownMenuItem<String>(
+            value: shift.shiftId,
+            child: Text(
+              "${formatTime(shift.shiftStart)} - ${formatTime(shift.shiftEnd)}",
+            ),
+          );
+        }).toList(),
+
+        onChanged: (value) {
+          if (value == null) return;
+
+          final selected = shifts.firstWhere(
+                (shift) => shift.shiftId == value,
+          );
+
+          setState(() {
+            selectedShiftId = selected.shiftId;
+            selectedShiftStart = selected.shiftStart;
+            selectedShiftEnd = selected.shiftEnd;
+          });
+
+          print("========== SELECTED SHIFT ==========");
+          print("Shift ID: $selectedShiftId");
+          print("Shift Start: $selectedShiftStart");
+          print("Shift End: $selectedShiftEnd");
+          print("====================================");
+        },
+
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return "Please select shift";
+          }
+
+          return null;
+        },
       ),
     );
   }

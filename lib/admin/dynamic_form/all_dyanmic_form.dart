@@ -20,7 +20,7 @@ class _AllDynamicFormState extends State<AllDynamicForm> {
     try {
       final response = await http.get(
         Uri.parse(
-          "http://15.206.209.30/attendance/get_templates.php?cid=${widget.cid}",
+          "https://trackme.joizone.com/attendance/get_templates.php?cid=${widget.cid}",
         ),
       );
 

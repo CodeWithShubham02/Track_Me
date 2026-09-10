@@ -85,7 +85,7 @@ class _AddAttedanceState extends State<AddAttedance> {
     try {
 
       final response = await http.post(
-        Uri.parse("http://15.206.209.30/attendance/add_attedance.php"),
+        Uri.parse("https://trackme.joizone.com/attendance/add_attedance.php"),
         body: body,
       );
 

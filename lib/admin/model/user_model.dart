@@ -212,38 +212,42 @@ class UserModel {
   }
 
   Map<String, dynamic> toJson() {
-
     return {
-
       'uid': uid,
       'cid': cid,
       'userid': userid,
       'password': password,
-      'userToken': userToken,
-      'userImg': userImg,
-      'imeiNo': imeiNo,
 
-      'fullName': fullName,
-      'userEmail': userEmail,
-      'userPhone': userPhone,
+      'user_token': userToken,
+      'user_img': userImg,
+      'imei_no': imeiNo,
+
+      'full_name': fullName,
+      'user_email': userEmail,
+      'user_phone': userPhone,
+
       'gender': gender,
-      'fullAddress': fullAddress,
+      'full_address': fullAddress,
 
-      'branchId': branchId,
-      'branchName': branchName,
-      'branchDistance': branchDistance,
-      'branchLat': branchLat,
-      'branchLong': branchLong,
+      // Branch
+      'branch_id': branchId,
+      'branch_name': branchName,
+      'branch_distance': branchDistance,
+      'branch_lat': branchLat,
+      'branch_long': branchLong,
 
-      'departmentId': departmentId,
-      'departmentName': departmentName,
+      // Department
+      'department_id': departmentId,
+      'department_name': departmentName,
 
-      'shiftId': shiftId,
-      'shiftStart': shiftStart,
-      'shiftEnd': shiftEnd,
+      // Shift
+      'shift_id': shiftId,
+      'shift_start': shiftStart,
+      'shift_end': shiftEnd,
 
-      'dateOfJoining': dateOfJoining,
-      'lastworkingdate': lastworkingdate,
+      // Other
+      'date_of_joining': dateOfJoining,
+      'last_working_date': lastworkingdate,
 
       'status': status,
       'role': role,
@@ -251,15 +255,16 @@ class UserModel {
       'createdAt': createdAt,
       'updatedAt': updatedAt,
 
-      'lastName': lastName,
-      'middleName': middleName,
+      'last_name': lastName,
+      'middle_name': middleName,
 
-      'cityName': cityName,
-      'pinCode': pinCode,
-      'districtName': districtName,
-      'reportingPosition': reportingPosition,
+      'city_name': cityName,
+      'pin_code': pinCode,
+      'district_name': districtName,
+      'reporting_position': reportingPosition,
 
-      'branchMap': branchMap,
+      // Multiple branches
+      'branch_map': branchMap,
     };
   }
 }

@@ -60,7 +60,7 @@ class _LocationHistoryMapScreenState
       String attendanceId) async {
     final response = await http.get(
       Uri.parse(
-          "http://15.206.209.30/attendance/fetch_location_history.php?attendance_id=$attendanceId"),
+          "https://trackme.joizone.com/attendance/fetch_location_history.php?attendance_id=$attendanceId"),
     );
 
     final data = jsonDecode(response.body);

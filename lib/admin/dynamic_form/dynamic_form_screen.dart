@@ -53,7 +53,7 @@ class _DynamicUserFormScreenState
       final response = await http.get(
 
         Uri.parse(
-          "http://15.206.209.30/attendance/get_fields.php?template_id=${widget.templateId}",
+          "https://trackme.joizone.com/attendance/get_fields.php?template_id=${widget.templateId}",
         ),
 
       );
@@ -220,7 +220,7 @@ class _DynamicUserFormScreenState
     var response=await http.post(
 
       Uri.parse(
-        "http://15.206.209.30/attendance/submit_dynamic_form.php",
+        "https://trackme.joizone.com/attendance/submit_dynamic_form.php",
       ),
 
       body:{

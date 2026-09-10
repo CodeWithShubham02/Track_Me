@@ -7,7 +7,7 @@ import '../model/user_model.dart';
 
 class UserController {
   // ✅ Change URL based on platform
-  final String baseUrl = "http://15.206.209.30/attendance";
+  final String baseUrl = "https://trackme.joizone.com/attendance";
   // Android Emulator → http://10.0.2.2/joizone
   // Real device → http://YOUR_PC_IP/joizone
 
@@ -152,7 +152,7 @@ class UserController {
   Future<List<UserModel>> fetchUsersByCid1(String cid) async {
     final response = await http.get(
       Uri.parse(
-        "http://15.206.209.30/attendance/get_users_cid.php?cid=$cid",
+        "https://trackme.joizone.com/attendance/get_users_cid.php?cid=$cid",
       ),
     );
 
@@ -171,7 +171,7 @@ class UserController {
   Future<List<Map<String, dynamic>>> fetchUsersByCid(String cid) async {
     final response = await http.get(
       Uri.parse(
-        "http://15.206.209.30/attendance/get_users_cid.php?cid=$cid",
+        "https://trackme.joizone.com/attendance/get_users_cid.php?cid=$cid",
       ),
     );
 
@@ -288,7 +288,7 @@ class UserController {
   Future<void> callDeleteApi(String uid) async {
     try {
       final url = Uri.parse(
-          "http://15.206.209.30/attendance/delete_user.php?uid=$uid");
+          "https://trackme.joizone.com/attendance/delete_user.php?uid=$uid");
 
       final response = await http.get(url);
 

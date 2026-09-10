@@ -8,7 +8,7 @@ import 'chat_model.dart';
 class ChatService {
 
   static const String baseUrl =
-      "http://15.206.209.30/attendance/";
+      "https://trackme.joizone.com/trackme/attendance/";
 
   static Future<List<ChatModel>> getMessages(String cid) async {
 

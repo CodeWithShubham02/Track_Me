@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ApiUrls {
-  static const base = "http://15.206.209.30/attendance/";
+  static const base = "https://trackme.joizone.com/attendance/";
   static const punchIn = "${base}attendance_punch_in.php";
   static const punchOut = "${base}attendance_punch_out.php";
   static const breakStart = "${base}break_start.php";

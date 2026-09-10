@@ -6,11 +6,11 @@ import 'package:joizone/user/model/client_form_report_model.dart';
 class ReportController {
 
   static const String apiUrl =
-      "http://15.206.209.30/attendance/get_report.php";
-
+      "https://trackme.joizone.com/attendance/get_report.php";
+  //https://trackme.joizone.com/
   static Future<List<ClientFormReportModel>> fetchReports(String cid) async {
     try {
-      final response = await http.get(Uri.parse("http://15.206.209.30/attendance/get_report.php?cid=${cid}"));
+      final response = await http.get(Uri.parse("https://trackme.joizone.com/attendance/get_report.php?cid=${cid}"));
 
       if (response.statusCode == 200) {
 
@@ -34,7 +34,7 @@ class ReportController {
   }
   static Future<List<ClientFormReportModel>> fetchReportDuplicate(String cid) async {
     try {
-      final response = await http.get(Uri.parse("http://15.206.209.30/attendance/get_duplicate_form.php?cid=$cid"));
+      final response = await http.get(Uri.parse("https://trackme.joizone.com/attendance/get_duplicate_form.php?cid=$cid"));
 
       if (response.statusCode == 200) {
 
@@ -100,7 +100,7 @@ class ReportController {
     try {
       final response = await http
           .post(
-        Uri.parse("http://15.206.209.30/attendance/update_form.php"),
+        Uri.parse("https://trackme.joizone.com/attendance/update_form.php"),
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
@@ -138,7 +138,7 @@ class ReportController {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse("http://15.206.209.30/attendance/update_forms.php"),
+        Uri.parse("https://trackme.joizone.com/attendance/update_forms.php"),
         body: {
           "id": id.toString(),
           "application_no": applicationNo,

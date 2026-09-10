@@ -133,7 +133,7 @@ class _UserIdCardDialogState extends State<UserIdCardDialog> {
     try {
       final response = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/update_user_img.php",
+          "https://trackme.joizone.com/attendance/update_user_img.php",
         ),
         body: {
           "uid": widget.user.uid,

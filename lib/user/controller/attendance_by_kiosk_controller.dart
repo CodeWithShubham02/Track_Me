@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class AttendanceController {
   static const String url =
-      "http://15.206.209.30/attendance/fetch_attendance_by_kiosk.php";
+      "https://trackme.joizone.com/attendance/fetch_attendance_by_kiosk.php";
 
   static Future<List<Map<String, dynamic>>> fetchAttendance({
     required String officeName,

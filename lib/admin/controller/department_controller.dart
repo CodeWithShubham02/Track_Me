@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../model/department_model.dart';
 
 class DepartmentController {
-  final String baseUrl = "http://15.206.209.30/attendance";
+  final String baseUrl = "https://trackme.joizone.com/attendance";
 
   /// GET
   Future<List<DepartmentModel>> fetchDepartments(String cid) async {

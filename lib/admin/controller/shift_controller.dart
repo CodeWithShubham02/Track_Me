@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../model/shift_model.dart';
 
 class ShiftController {
-  final String baseUrl = "http://15.206.209.30/attendance";
+  final String baseUrl = "https://trackme.joizone.com/attendance";
 
   Future<List<ShiftModel>> fetchShifts(String cid) async {
     final res = await http.get(

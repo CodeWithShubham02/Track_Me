@@ -485,7 +485,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-          "http://15.206.209.30/attendance/get_company_forms.php?cid=${widget.userModel.cid}",
+          "https://trackme.joizone.com/attendance/get_company_forms.php?cid=${widget.userModel.cid}",
         ),
       );
 
@@ -509,8 +509,15 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       isLoadingForms = false;
     });
   }
+
+
+
+
   @override
   void initState() {
+
+    super.initState();
+
     print("=====================================");
     print("=====================================");
     print("=====================================");
@@ -529,10 +536,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     print("=====================================");
     print("=====================================");
     print("=====================================");
+
+
     getCompanyForms();
     _controllerTopCenter =
         ConfettiController(duration: const Duration(seconds: 5));
-    super.initState();
     _controllerTopCenter.play();
     notificationService.requestNotificationPermission();
     notificationService.getDeviceToken();
@@ -543,7 +551,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     //
     notificationService.setupInteractMessage(context);
     loadAttendanceId();
-
     loadLiveLocation();
     startGpsMonitor();
     startInternetMonitor(); // 🔥 ADD THIS
@@ -554,6 +561,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       });
     });
   }
+
+
+
   @override
   void dispose() {
     autoCloseTimer?.cancel();
@@ -675,7 +685,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
 
     final res = await http.post(
       Uri.parse(
-        "http://15.206.209.30/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
+        "https://trackme.joizone.com/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
       ),
       body: {
         "action": "punch_out",
@@ -736,7 +746,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
         try {
           final response = await http.post(
             Uri.parse(
-              "http://15.206.209.30/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
+              "https://trackme.joizone.com/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
             ),
             body: {
               "action": "punch_out",
@@ -899,7 +909,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     );
   }
 
-
   Future<Position> getCurrentLocation() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
       throw 'Location service disabled';
@@ -982,7 +991,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
 
       final response = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
+          "https://trackme.joizone.com/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
         ),
         body: {
           "action": "punch_out",
@@ -1041,7 +1050,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       if (internet) {
         await http.post(
           Uri.parse(
-            "http://15.206.209.30/attendance/track_location.php",
+            "https://trackme.joizone.com/attendance/track_location.php",
           ),
           body: {
             "attendance_id": attendanceId!,
@@ -1162,7 +1171,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       print("BRANCH : $branchName");
       final response = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/save_notification.php",
+          "https://trackme.joizone.com/attendance/save_notification.php",
         ),
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -1310,7 +1319,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   DateTime? breakStartTime;
   Future<bool> checkFeatureAccess() async {
     final response = await http.post(
-      Uri.parse("http://15.206.209.30/attendance/check_feature_access.php"),
+      Uri.parse("https://trackme.joizone.com/attendance/check_feature_access.php"),
       body: {
         "tl_id": widget.userModel.uid.toString(),
         "feature_name": "UpdateUserShiftScreen",
@@ -1570,7 +1579,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   ),
                 ),
                 Text(
-                  "1.0.2",
+                  "1.1.3",
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.normal,

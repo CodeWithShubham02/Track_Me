@@ -372,6 +372,12 @@ class _AirportFormScreenState extends State<AirportFormScreen> {
 
                   print("Selected Branch: $selectBranchName");
                 },
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return "Select branch.";
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 12),
               TextFormField(

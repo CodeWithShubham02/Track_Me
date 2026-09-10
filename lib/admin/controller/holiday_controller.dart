@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../model/assign_holiday_model.dart';
 
 class HolidayController {
-  final String baseUrl = "http://15.206.209.30/attendance/assign_holiday.php";
+  final String baseUrl = "https://trackme.joizone.com/attendance/assign_holiday.php";
 
   Future<HolidayAssignModel> assignHoliday({
     required String cid,

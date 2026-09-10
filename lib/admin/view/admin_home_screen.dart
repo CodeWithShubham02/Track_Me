@@ -115,7 +115,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
       final response = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/attedance_chart.php",
+          "https://trackme.joizone.com/attendance/attedance_chart.php",
         ),
         body: {
           "cid": widget.cid,
@@ -172,7 +172,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   Future<void> fetchUsers() async {
     final response = await http.get(
-      Uri.parse("http://15.206.209.30/attendance/get_users_cid.php?cid=${widget.cid}"),
+      Uri.parse("https://trackme.joizone.com/attendance/get_users_cid.php?cid=${widget.cid}"),
     );
     final data = jsonDecode(response.body);
     int male = 0;
@@ -200,7 +200,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   Future<void> fetchTodayReport() async {
     final response = await http.post(
-      Uri.parse("http://15.206.209.30/attendance/get_report.php"),
+      Uri.parse("https://trackme.joizone.com/attendance/get_report.php"),
       body: {
         "cid": widget.cid,
         "date": formatDate(DateTime.now()),
@@ -659,7 +659,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int totalMonthReports = 0;
   Future<void> fetchMonthlyReport(String month) async {
     final response = await http.post(
-      Uri.parse("http://15.206.209.30/attendance/get_monthly_kiosk_report.php"),
+      Uri.parse("https://trackme.joizone.com/attendance/get_monthly_kiosk_report.php"),
       body: {
         "month": month,
         "cid":widget.cid
@@ -797,7 +797,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-          "http://15.206.209.30/attendance/get_dynamic_form_chart.php?cid=${widget.cid}",
+          "https://trackme.joizone.com/attendance/get_dynamic_form_chart.php?cid=${widget.cid}",
         ),
       );
 
@@ -990,7 +990,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     try {
       final response = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/get_monthly_dynamic_form_chart.php",
+          "https://trackme.joizone.com/attendance/get_monthly_dynamic_form_chart.php",
         ),
         body: {
           "cid": widget.cid,
@@ -1151,7 +1151,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   Future<void> fetchPerformance() async {
     final response = await http.post(
-      Uri.parse("http://15.206.209.30/attendance/weekly_team_performance.php"),
+      Uri.parse("https://trackme.joizone.com/attendance/weekly_team_performance.php"),
       body: {
         "cid": widget.cid,
       },
@@ -1264,7 +1264,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               try {
                 final res = await http.get(
                   Uri.parse(
-                    'http://15.206.209.30/attendance/mark_absent.php',
+                    'https://trackme.joizone.com/attendance/mark_absent.php',
                   ),
                 );
 

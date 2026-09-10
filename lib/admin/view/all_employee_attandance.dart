@@ -51,7 +51,7 @@ class _AllEmployeeAttendanceScreenState
     try {
       final response = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/fetch_attendance_by_date.php",
+          "https://trackme.joizone.com/attendance/fetch_attendance_by_date.php",
         ),
         body: {"cid": widget.cid, "date": dateKey(selectedDate)},
       );
@@ -253,7 +253,7 @@ class _AllEmployeeAttendanceScreenState
     try {
       final res = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/update_attendance_status.php",
+          "https://trackme.joizone.com/attendance/update_attendance_status.php",
         ),
         body: {"attendance_id": attendanceId, "status": status},
       );
@@ -515,7 +515,7 @@ class _AllEmployeeAttendanceScreenState
     required DateTime date,
   }) async {
     final response = await http.post(
-      Uri.parse("http://15.206.209.30/attendance/updateHoliday.php"),
+      Uri.parse("https://trackme.joizone.com/attendance/updateHoliday.php"),
       body: {
         "id": id,
         "date": DateFormat('yyyy-MM-dd').format(date),
@@ -711,12 +711,12 @@ class _AllEmployeeAttendanceScreenState
                           DataColumn(
                             label: Row(
                               children: [
-                                const Text("Office Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
+                                const Text("Side Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),),
                                 const SizedBox(width: 5),
                                 InkWell(
                                   onTap: () {
                                     showMultiFilterDialog(
-                                      title: "Office Name",
+                                      title: "Side Name",
                                       options: getUniqueValues('office_name'),
                                       selectedValues: selectedOffice,
                                     );
@@ -823,7 +823,7 @@ class _AllEmployeeAttendanceScreenState
                                         final id = e['id'];
                                         final res = await http.get(
                                           Uri.parse(
-                                            "http://15.206.209.30/attendance/fetch_current_location.php?attendance_id=$id",
+                                            "https://trackme.joizone.com/attendance/fetch_current_location.php?attendance_id=$id",
                                           ),
                                         );
                                         print(res);
@@ -1013,7 +1013,7 @@ class _AllEmployeeAttendanceScreenState
 
                                         final res = await http.post(
                                           Uri.parse(
-                                            "http://15.206.209.30/attendance/delete_attendance_by_id.php",
+                                            "https://trackme.joizone.com/attendance/delete_attendance_by_id.php",
                                           ),
                                           body: {"attendance_id": attendanceId},
                                         );

@@ -31,7 +31,7 @@ class _InactiveBranchSheetState
   }
   Future<List<BranchModel>> getInactiveBranches(String cid) async {
     final response = await http.get(
-      Uri.parse("http://15.206.209.30/attendance/get_inactive_branch.php?cid=$cid"),
+      Uri.parse("https://trackme.joizone.com/attendance/get_inactive_branch.php?cid=$cid"),
     );
 
     final data = jsonDecode(response.body);

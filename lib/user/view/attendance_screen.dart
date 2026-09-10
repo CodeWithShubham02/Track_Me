@@ -43,7 +43,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     print("cid : ${widget.cid}");
     print("uid : ${widget.uid}");
     final response = await http.post(
-      Uri.parse("http://15.206.209.30/attendance/fetch_attendance_by_id.php"),
+      Uri.parse("https://trackme.joizone.com/attendance/fetch_attendance_by_id.php"),
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },

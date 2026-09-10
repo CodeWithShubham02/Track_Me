@@ -41,7 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       final response = await http.post(
         Uri.parse(
-          "http://15.206.209.30/attendance/get_feature_access.php",
+          "https://trackme.joizone.com/attendance/get_feature_access.php",
         ),
         body: {
           "cid": widget.cid,
@@ -98,7 +98,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-          "http://15.206.209.30/attendance/get_team_leaders.php?cid=${widget.cid}",
+          "https://trackme.joizone.com/attendance/get_team_leaders.php?cid=${widget.cid}",
         ),
       );
 
@@ -234,7 +234,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     try {
                       final response = await http.post(
                         Uri.parse(
-                          "http://15.206.209.30/attendance/add_feature_access.php",
+                          "https://trackme.joizone.com/attendance/add_feature_access.php",
                         ),
                         body: {
                           "tl_id": tlId,
@@ -301,7 +301,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) async {
     final response = await http.post(
       Uri.parse(
-        "http://15.206.209.30/attendance/update_feature_access.php",
+        "https://trackme.joizone.com/attendance/update_feature_access.php",
       ),
       body: {
         "tl_id": tlId,

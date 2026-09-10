@@ -268,7 +268,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(
-          'http://15.206.209.30/attendance/upload_image.php',
+          'https://trackme.joizone.com/attendance/upload_image.php',
         ),
       );
 

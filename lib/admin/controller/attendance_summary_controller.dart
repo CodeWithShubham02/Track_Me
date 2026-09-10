@@ -4,8 +4,8 @@ import '../model/attendance_summary_model.dart';
 
 class AttendanceSummaryController {
   static const String url =
-      "http://15.206.209.30/attendance/attendance_summary_report.php";
-
+      "https://trackme.joizone.com/attendance/attendance_summary_report.php";
+//13.126.42.93
   static Future<List<AttendanceSummary>> fetchSummary({
     required String fromDate,
     required String toDate,

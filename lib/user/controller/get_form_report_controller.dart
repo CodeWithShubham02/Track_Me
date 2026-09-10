@@ -5,7 +5,7 @@ import '../model/client_form_report_model.dart';
 class SubmitFormController {
 
   static const String api =
-      "http://15.206.209.30/attendance/get_reports_by_date.php";
+      "https://trackme.joizone.com/attendance/get_reports_by_date.php";
 
   static Future<List<ClientFormReportModel>> fetchReports(
       String uid, String date) async {

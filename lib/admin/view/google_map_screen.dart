@@ -40,7 +40,7 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-          "http://15.206.209.30/attendance/user_live_location.php?cid=${widget.cid}",
+          "https://trackme.joizone.com/attendance/user_live_location.php?cid=${widget.cid}",
         ),
       );
 

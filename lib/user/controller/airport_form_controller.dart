@@ -1,15 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:joizone/api_urls.dart';
 import '../airport_form_model.dart';
 
 class AirportFormController {
-  static const String apiUrl =
-      "https://trackme.joizone.com/attendance/add_report.php";
+  // static const String apiUrl =
+  //     "https://trackme.joizone.com/attendance/add_report.php";
 
   static Future<bool> submitForm(AirportFormModel model) async {
     try {
       final response = await http.post(
-        Uri.parse(apiUrl),
+        Uri.parse(ApiUrls.add_report),
         headers: {
           "Content-Type": "application/json",
         },

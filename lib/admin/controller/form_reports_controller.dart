@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:joizone/api_urls.dart';
 import 'package:joizone/user/model/client_form_report_model.dart';
 
 class ReportController {
@@ -10,7 +11,9 @@ class ReportController {
   //https://trackme.joizone.com/
   static Future<List<ClientFormReportModel>> fetchReports(String cid) async {
     try {
-      final response = await http.get(Uri.parse("https://trackme.joizone.com/attendance/get_report.php?cid=${cid}"));
+      final response = await http.get(
+        Uri.parse("${ApiUrls.getFormReports}?cid=$cid"),
+      );
 
       if (response.statusCode == 200) {
 
@@ -62,7 +65,7 @@ class ReportController {
     String? cid,
   }) async {
     try {
-      String url = apiUrl;
+      String url = ApiUrls.getFormReports;
 
       if (fromDate != null && toDate != null) {
         url += "?from_date=$fromDate&to_date=$toDate&cid=$cid";

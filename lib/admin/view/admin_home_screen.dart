@@ -10,6 +10,7 @@ import 'package:joizone/admin/view/create_form_screen.dart';
 import 'package:joizone/admin/view/settings_screen.dart';
 import 'package:joizone/admin/view/shift_screen.dart';
 import 'package:joizone/admin/view/user_attendance_detail_screen.dart';
+import 'package:joizone/api_urls.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -32,6 +33,7 @@ import 'location_history_screen.dart';
 import 'login_screen.dart';
 import 'monthly_attendance_screen.dart';
 import 'monthly_summary_screen.dart';
+import 'mtd_status_screen.dart';
 import 'upload_remark_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
@@ -1227,13 +1229,24 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           //     ),child: Text("Group Chat")),
           SizedBox(width: 10,),
           ElevatedButton(onPressed: (){
+            Get.to(()=>MtdStatusScreen(cid:widget.cid));
+          },
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5), // Perfect square corners
+                ),
+              ),child: Text("📍 MTD Status",
+                style: TextStyle(color: Color(0xff1D4ED8),fontFamily: 'impact',fontSize: 14),
+              )),
+          SizedBox(width: 10,),
+          ElevatedButton(onPressed: (){
             Get.to(()=>AddBranchScreen(cid:widget.cid));
           },
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5), // Perfect square corners
                 ),
-              ),child: Text("📍 Branch Analytics",
+              ),child: Text("📍 Branch Management",
                 style: TextStyle(color: Color(0xff1D4ED8),fontFamily: 'impact',fontSize: 14),
               )),
           SizedBox(
@@ -1245,7 +1258,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(5), // Perfect square corners
             ),
-          ),child: Text("🕒 Shift Distribution",  style: TextStyle(color: Color(0xff1D4ED8),fontFamily: 'impact',fontSize: 14),)),
+          ),child: Text("🕒 Shift Management",  style: TextStyle(color: Color(0xff1D4ED8),fontFamily: 'impact',fontSize: 14),)),
           SizedBox(
             width: 10,
           ),
@@ -1256,7 +1269,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(5), // Perfect square corners
             ),
-          ), child: Text("🏢 Department Analytics",  style: TextStyle(color: Color(0xff1D4ED8),fontFamily: 'impact',fontSize: 14),)),
+          ), child: Text("🏢 Department (Role)",  style: TextStyle(color: Color(0xff1D4ED8),fontFamily: 'impact',fontSize: 14),)),
           SizedBox(width: 10,),
           IconButton(
             icon: const Icon(Icons.refresh_outlined,color: Colors.white,),
@@ -1313,13 +1326,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Company ID: ${widget.cid}",
+                    "Company ID: ${widget.cid} - Version: ${ApiUrls.appVersionAdmin}",
                     style: const TextStyle(
                       fontSize: 14,
                       color: Colors.grey,
                       fontWeight: FontWeight.bold
                     ),
                   ),
+
                   IconButton(onPressed: (){
                     fetchAttendance();
                     fetchTodayReport();
@@ -1475,19 +1489,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 Get.to(()=>CreateFormScreen(cid: widget.cid,));
               },
             ),
-            ListTile(
-              leading: Icon(Icons.calendar_month,color: Color(0xff2563EB),size: 22,),
-              title: Text("Work Schedule",
-                style: TextStyle(
-                  color: Color(0xFF1E293B), // Dark Slate
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),),
-              onTap: () {
-                Get.back();
-                Get.to(()=>RosterScreen(cid: widget.cid,));
-              },
-            ),
+            // ListTile(
+            //   leading: Icon(Icons.calendar_month,color: Color(0xff2563EB),size: 22,),
+            //   title: Text("Work Schedule",
+            //     style: TextStyle(
+            //       color: Color(0xFF1E293B), // Dark Slate
+            //       fontSize: 15,
+            //       fontWeight: FontWeight.w600,
+            //     ),),
+            //   onTap: () {
+            //     Get.back();
+            //     Get.to(()=>RosterScreen(cid: widget.cid,));
+            //   },
+            // ),
             ListTile(
               leading: Icon(Icons.help_center_outlined,color: Color(0xff2563EB),size: 22,),
               title: Text("Permission",

@@ -77,7 +77,7 @@ dependencies:
   month_picker_dialog:
   confetti: ^0.8.0
   video_player: ^2.10.0
-
+  file_saver:
 
 
 dev_dependencies:
@@ -106,8 +106,6 @@ flutter:
   assets:
     - assets/image/
     - assets/image/logo.png
-    - assets/video/demo_users.mp4
-    - assets/video/demo_team_leader.mp4
     - assets/states.json
     - assets/cities.json
 

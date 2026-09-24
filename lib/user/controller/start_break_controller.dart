@@ -1,11 +1,13 @@
 import 'dart:convert';
+import 'package:googleapis/apigeeregistry/v1.dart';
 import 'package:http/http.dart' as http;
+import 'package:joizone/api_urls.dart';
 
 Future<Map<String, dynamic>> startBreakApi({
   required String attendanceId,
   required String uid,
 }) async {
-  final url = Uri.parse("https://trackme.joizone.com/attendance/attendance_break_start.php");
+  final url = Uri.parse(ApiUrls.attendanceBreakStart);
 
   final response = await http.post(
     url,
@@ -23,11 +25,12 @@ Future<Map<String, dynamic>> startBreakApi({
     throw Exception("Failed to call API");
   }
 }
+
 Future<Map<String, dynamic>> endBreakApi({
   required String attendanceId,
   required String uid,
 }) async {
-  final url = Uri.parse("https://trackme.joizone.com/attendance/attendance_break_end.php");
+  final url = Uri.parse(ApiUrls.attendanceBreakEnd);
 
   final response = await http.post(
     url,

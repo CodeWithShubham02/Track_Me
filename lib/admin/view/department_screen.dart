@@ -47,7 +47,7 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
           ),
         ),
         iconTheme: IconThemeData(color: Colors.white),
-        title: const Text("User Type",style: TextStyle(color: Colors.white,fontSize: 18),),
+        title: const Text("User Role",style: TextStyle(color: Colors.white,fontSize: 18),),
         backgroundColor: Colors.blue,
       ),
       floatingActionButton: FloatingActionButton(

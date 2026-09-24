@@ -144,33 +144,74 @@ class _GetReportKioskScreenState extends State<GetReportKioskScreen> {
                   DataCell(Text(r.kioskName)),
                   DataCell(Text(r.gpsLocation)),
                   DataCell(
-                    r.imageUrls.isNotEmpty
-                        ? Wrap(
-                      spacing: 18,
-                      runSpacing: 8,
-                      children: r.imageUrls.map((url) {
-                        return GestureDetector(
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (_) => Dialog(
-                                child: Image.network(url),
-                              ),
-                            );
-                          },
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: Image.network(
-                              url,
-                              height: 50,
-                              width: 70,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                    r.imageUrls.isEmpty
+                        ? const Icon(
+                      Icons.image_not_supported,
+                      color: Colors.grey,
                     )
-                        : const Icon(Icons.image_not_supported),
+                        : SizedBox(
+                      width: 180,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: r.imageUrls.map((url) {
+                          return GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return Dialog(
+                                    child: InteractiveViewer(
+                                      child: Image.network(
+                                        url,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (
+                                            context,
+                                            error,
+                                            stackTrace,
+                                            ) {
+                                          return const Padding(
+                                            padding: EdgeInsets.all(30),
+                                            child: Icon(
+                                              Icons.broken_image,
+                                              size: 50,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: Image.network(
+                                url,
+                                height: 50,
+                                width: 55,
+                                fit: BoxFit.cover,
+                                errorBuilder: (
+                                    context,
+                                    error,
+                                    stackTrace,
+                                    ) {
+                                  return Container(
+                                    height: 50,
+                                    width: 55,
+                                    color: Colors.grey.shade200,
+                                    child: const Icon(
+                                      Icons.broken_image,
+                                      size: 20,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
                   ),
                   DataCell(Text(r.applicationNo)),
                   DataCell(Text(r.relation)),

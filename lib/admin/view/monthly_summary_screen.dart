@@ -13,6 +13,7 @@ import 'package:universal_html/html.dart' as html;
 
 import '../controller/attendance_summary_controller.dart';
 import '../model/attendance_summary_model.dart';
+import 'custom_date_range_picker.dart';
 
 class AttendanceSummaryScreen extends StatefulWidget {
   final String cid;
@@ -28,11 +29,14 @@ class _AttendanceSummaryScreenState extends State<AttendanceSummaryScreen> {
   List<AttendanceSummary> records = [];
 
   Future<void> pickRange() async {
-    final picked = await showDateRangePicker(
+    final picked = await showDialog<DateTimeRange>(
       context: context,
-      firstDate: DateTime(2024),
-      lastDate: DateTime.now(),
-      saveText: "Submit",
+      builder: (context) {
+        return CustomDateRangePicker(
+          firstDate: DateTime(2024),
+          lastDate: DateTime.now(),
+        );
+      },
     );
 
     if (picked != null) {

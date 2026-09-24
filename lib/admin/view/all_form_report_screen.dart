@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:url_launcher/url_launcher.dart';
 import '../controller/form_reports_controller.dart';
+import 'custom_date_range_picker.dart';
 import 'duplicate_form_screen.dart';
 import 'dart:convert';
 
@@ -488,20 +489,22 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
   }
 
   Future<void> _pickDateAndFetchReports() async {
-    final picked = await showDateRangePicker(
+    final picked = await showDialog<DateTimeRange>(
       context: context,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-      initialDateRange:
-      selectedFromDate != null && selectedToDate != null
-          ? DateTimeRange(
-        start: selectedFromDate!,
-        end: selectedToDate!,
-      )
-          : DateTimeRange(
-        start: DateTime.now(),
-        end: DateTime.now(),
-      ),
+      builder: (context) {
+        return CustomDateRangePicker(
+          initialRange:
+          selectedFromDate != null &&
+              selectedToDate != null
+              ? DateTimeRange(
+            start: selectedFromDate!,
+            end: selectedToDate!,
+          )
+              : null,
+          firstDate: DateTime(2020),
+          lastDate: DateTime.now(),
+        );
+      },
     );
 
     if (picked == null) return;
@@ -513,14 +516,15 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
       currentPage = 0;
 
       reportsFuture = ReportController.fetchReports1(
-        fromDate: DateFormat('yyyy-MM-dd').format(picked.start),
-        toDate: DateFormat('yyyy-MM-dd').format(picked.end),
+        fromDate: DateFormat('yyyy-MM-dd')
+            .format(picked.start),
+        toDate: DateFormat('yyyy-MM-dd')
+            .format(picked.end),
         cid: widget.cid,
       );
     });
   }
-//jab date range user select karta hai tab uska date range store hona chahiye uske screen par and if user next screen par jaata hai and return usi screen par aata hai to vhi date
-  //select hona chahiye jab user proper back jaata hai to remove ho jaana chahiye date range
+
   Future<String> getAddressFromLatLng(String gps) async {
     try {
       if (gps.isEmpty) return "Location not available";
@@ -585,6 +589,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
       TextCellValue("Contact No"),
       TextCellValue("Address"),
       TextCellValue("Kiosk Name"),
+      TextCellValue("Site Name"),
       TextCellValue("Bank Remark"),
       TextCellValue("RemarksDate"),
     ]);
@@ -616,6 +621,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
         TextCellValue(row.contactNo),
         TextCellValue(address),
         TextCellValue(row.kioskName),
+        TextCellValue(row.attendanceSiteName),
         TextCellValue(" "),
         TextCellValue(" "),
         // TextCellValue(
@@ -641,6 +647,30 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
         ..setAttribute("download", fileName)
         ..click();
       html.Url.revokeObjectUrl(url);
+
+      Get.snackbar(
+        "Success",
+        "Export Template download successfully: $fileName",
+        snackPosition: SnackPosition.TOP,
+
+        backgroundColor: const Color(0xFF16A34A),
+        colorText: Colors.white,
+
+        icon: const Icon(
+          Icons.check_circle_outline,
+          color: Colors.white,
+          size: 22,
+        ),
+
+        margin: const EdgeInsets.all(16),
+        borderRadius: 10,
+
+        duration: const Duration(seconds: 5),
+
+        // Optional
+        snackStyle: SnackStyle.FLOATING,
+        isDismissible: true,
+      );
     } else {
       // Android/iOS: Save to Documents folder
       final directory = await getApplicationDocumentsDirectory();
@@ -746,10 +776,28 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
     final List<int>? bytes = excel.encode();
 
     if (bytes == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Failed to create Excel file"),
+      Get.snackbar(
+        "Error",
+        "Excel file not create..",
+        snackPosition: SnackPosition.TOP,
+
+        backgroundColor: const Color(0xFF16A34A),
+        colorText: Colors.white,
+
+        icon: const Icon(
+          Icons.check_circle_outline,
+          color: Colors.white,
+          size: 22,
         ),
+
+        margin: const EdgeInsets.all(16),
+        borderRadius: 10,
+
+        duration: const Duration(seconds: 5),
+
+        // Optional
+        snackStyle: SnackStyle.FLOATING,
+        isDismissible: true,
       );
       return;
     }
@@ -774,12 +822,28 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
 
       html.Url.revokeObjectUrl(url);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Post/Final Excel downloaded successfully",
-          ),
+      Get.snackbar(
+        "Success",
+        "Post/Final Excel downloaded successfully",
+        snackPosition: SnackPosition.TOP,
+
+        backgroundColor: const Color(0xFF16A34A),
+        colorText: Colors.white,
+
+        icon: const Icon(
+          Icons.check_circle_outline,
+          color: Colors.white,
+          size: 22,
         ),
+
+        margin: const EdgeInsets.all(16),
+        borderRadius: 10,
+
+        duration: const Duration(seconds: 5),
+
+        // Optional
+        snackStyle: SnackStyle.FLOATING,
+        isDismissible: true,
       );
     } else {
       // ANDROID / iOS
@@ -1956,12 +2020,28 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
 
               // Agar kisi bhi row me Bank Remark / Update Status nahi hai
               if (postFinalReports.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      "No Post/Final records available. Bank Remark or Update Status is required.",
-                    ),
+                Get.snackbar(
+                  "Error",
+                  "No Post/Final records available. Bank Remark or Update Status is required.",
+                  snackPosition: SnackPosition.TOP,
+
+                  backgroundColor: const Color(0xFF16A34A),
+                  colorText: Colors.white,
+
+                  icon: const Icon(
+                    Icons.check_circle_outline,
+                    color: Colors.white,
+                    size: 22,
                   ),
+
+                  margin: const EdgeInsets.all(16),
+                  borderRadius: 10,
+
+                  duration: const Duration(seconds: 5),
+
+                  // Optional
+                  snackStyle: SnackStyle.FLOATING,
+                  isDismissible: true,
                 );
                 return;
               }
@@ -2251,7 +2331,8 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                 DataColumn(label: Text("Contact Number",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                                 DataColumn(label: Text("Snapshot",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                                 DataColumn(label: Text("Address",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
-                                DataColumn(label: Text("Branch Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Kiosk Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                                DataColumn(label: Text("Site Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                                 DataColumn(label: Text("Bank Remark",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
 
                                 // DataColumn(
@@ -2468,6 +2549,7 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
                                     ),
 
                                     DataCell(Text(report.kioskName)),
+                                    DataCell(Text(report.attendanceSiteName)),
                                     DataCell(Text(report.bankRemarks)),
                                     DataCell(Text(report.updateStatus)),
 

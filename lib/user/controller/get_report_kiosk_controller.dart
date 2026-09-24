@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:joizone/api_urls.dart';
 
 import '../model/client_form_report_model.dart';
 
 class GetReportKioskController {
-  static const String api =
-      "https://trackme.joizone.com/attendance/get_reports_by_kiosk.php";
+  // static const String api =
+  //     "https://trackme.joizone.com/attendance/get_reports_by_kiosk.php";
 
   static Future<List<ClientFormReportModel>> fetchReports(
       List<String> kioskNames,
@@ -14,7 +15,7 @@ class GetReportKioskController {
     try {
       final kioskName = kioskNames.join(',');
 
-      final uri = Uri.parse(api).replace(
+      final uri = Uri.parse(ApiUrls.getReportsByKiosk).replace(
         queryParameters: {
           'kiosk_name': kioskName,
           'date': date,

@@ -18,6 +18,8 @@ import 'package:universal_html/html.dart' as html;
 import '../controller/user_controller.dart';
 import '../model/user_model.dart';
 import 'package:http/http.dart' as http;
+
+import 'bulk_employee_screen.dart';
 class UsersTableScreen extends StatefulWidget {
   final String cid;
   const UsersTableScreen({super.key, required this.cid});
@@ -508,7 +510,30 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
         ..setAttribute("download", fileName)
         ..click();
 
-      Get.snackbar("Success", "Downloading Excel file...");
+
+      Get.snackbar(
+        "Success",
+        "Download All (Active) Users Excel File Successfully: $fileName",
+        snackPosition: SnackPosition.TOP,
+
+        backgroundColor: const Color(0xFF16A34A),
+        colorText: Colors.white,
+
+        icon: const Icon(
+          Icons.check_circle_outline,
+          color: Colors.white,
+          size: 22,
+        ),
+
+        margin: const EdgeInsets.all(16),
+        borderRadius: 10,
+
+        duration: const Duration(seconds: 5),
+
+        // Optional
+        snackStyle: SnackStyle.FLOATING,
+        isDismissible: true,
+      );
     } else {
       // 📱 ANDROID / IOS DOWNLOAD
 
@@ -681,12 +706,32 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
   int rowsPerPage = 10;
 
   List<UserModel> get paginatedUsers {
+    // First apply name filter
+    List<UserModel> result = filteredUsers;
+
+    if (nameSearch.trim().isNotEmpty) {
+      final search = nameSearch.trim().toLowerCase();
+
+      result = result.where((u) {
+        final fullName =
+        "${u.fullName} ${u.lastName}".trim().toLowerCase();
+
+        return fullName.contains(search);
+      }).toList();
+    }
+
+    // Pagination safety
     final start = currentPage * rowsPerPage;
+
+    if (start >= result.length) {
+      return [];
+    }
+
     final end = start + rowsPerPage;
 
-    return filteredUsers.sublist(
+    return result.sublist(
       start,
-      end > filteredUsers.length ? filteredUsers.length : end,
+      end > result.length ? result.length : end,
     );
   }
   void _showImageDialog(BuildContext context, String imageUrl) {
@@ -743,6 +788,66 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
       },
     );
   }
+
+  String nameSearch = "";
+  void showNameFilter() {
+    final controller = TextEditingController(
+      text: nameSearch,
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(
+            "Filter by Full Name",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: "Search employee name...",
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  nameSearch = "";
+                  currentPage = 0;
+                });
+
+                Navigator.pop(dialogContext);
+              },
+              child: const Text("Clear"),
+            ),
+
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  nameSearch =
+                      controller.text.trim().toLowerCase();
+
+                  // Search ke baad first page par jao
+                  currentPage = 0;
+                });
+
+                Navigator.pop(dialogContext);
+              },
+              child: const Text("Apply"),
+            ),
+          ],
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -779,6 +884,18 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
             borderRadius: BorderRadius.circular(5), // Perfect square corners
           ),
         ),child: Text("Create Employee")),
+        SizedBox(width: 10,),
+        OutlinedButton.icon(
+          onPressed: () {
+            Get.to(
+                  () => BulkEmployeeUploadScreen(
+                cid: widget.cid,
+              ),
+            );
+          },
+          icon: const Icon(Icons.upload_file,color: Colors.white,),
+          label: const Text("Bulk Upload Employees",style: TextStyle(color: Colors.white),),
+        ),
         SizedBox(width: 10,),
         IconButton(onPressed: (){
           //download the excel file
@@ -829,9 +946,37 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
                                 DataColumn(label: Text("City Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                                 DataColumn(label: Text("UserID",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                                 DataColumn(label: Text("Password",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
-                                DataColumn(label: Text("Full Name"
-                                  ,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),
-                                )),
+                                DataColumn(
+                                  label: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text(
+                                        "Full Name",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          fontFamily: 'serif',
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 4),
+
+                                      IconButton(
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        tooltip: "Filter by name",
+                                        icon: Icon(
+                                          Icons.filter_list,
+                                          size: 18,
+                                          color: nameSearch.isNotEmpty
+                                              ? const Color(0xff2563EB)
+                                              : Colors.grey,
+                                        ),
+                                        onPressed: showNameFilter,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                             DataColumn(
                               label: Row(
                                 children: [

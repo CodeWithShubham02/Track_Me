@@ -4,14 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
-class ApiUrls {
-  static const base = "https://trackme.joizone.com/attendance/";
-  static const punchIn = "${base}attendance_punch_in.php";
-  static const punchOut = "${base}attendance_punch_out.php";
-  static const breakStart = "${base}break_start.php";
-  static const breakEnd = "${base}break_end.php";
-  static const trackLocation = "${base}track_location.php";
-}
+import '../../api_urls.dart';
+
+
 
 class AttendanceService {
   Timer? _locationTimer;

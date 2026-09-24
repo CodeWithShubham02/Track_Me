@@ -54,7 +54,7 @@ class _InactiveBranchSheetState
           children: [
 
             const Text(
-              "Inactive Kiosk",
+              "Inactive Branch",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

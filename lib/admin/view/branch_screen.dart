@@ -74,7 +74,7 @@ class _AddBranchScreenState extends State<AddBranchScreen> {
         iconTheme: IconThemeData(
           color: Colors.white
         ),
-          backgroundColor: Colors.blue,title: const Text("Kiosk Management",style: TextStyle(color: Colors.white,fontSize: 18),),
+          backgroundColor: Colors.blue,title: const Text("Create Branch",style: TextStyle(color: Colors.white,fontSize: 18),),
         actions: [
           ElevatedButton(onPressed: (){
             Get.to(()=>BranchListScreen(cid: widget.cid));
@@ -82,7 +82,7 @@ class _AddBranchScreenState extends State<AddBranchScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(5), // Perfect square corners
             ),
-          ),child: Text("Manage Kiosks")),
+          ),child: Text("All Branch")),
           SizedBox(width: 20,)
         ],
       ),

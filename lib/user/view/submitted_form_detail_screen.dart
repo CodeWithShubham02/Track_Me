@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:joizone/api_urls.dart';
 
 class SubmittedFormDetailScreen extends StatefulWidget {
   final String submissionId;
@@ -40,7 +41,7 @@ class _SubmittedFormDetailScreenState
 
       final response = await http.get(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/get_dynamic_form_details.php?submission_id=${widget.submissionId}",
+          "${ApiUrls.getDynamicForm}?submission_id=${widget.submissionId}",
         ),
       );
       print("=======================================================");

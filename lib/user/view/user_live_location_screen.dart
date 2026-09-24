@@ -11,6 +11,7 @@ import '../../admin/controller/user_controller.dart';
 import '../../admin/model/location_history_model.dart';
 import '../../admin/model/user_model.dart';
 import '../../admin/view/location_history_map_screen.dart';
+import '../../api_urls.dart';
 
 class UserLiveLocationScreen extends StatefulWidget {
   final String cid;
@@ -82,7 +83,8 @@ class _UserLiveLocationScreenState extends State<UserLiveLocationScreen> {
 
     final response = await http.get(
       Uri.parse(
-          "https://trackme.joizone.com/attendance/location_history.php?uid=${selectedUser!.uid}&date=$formattedDate"),
+        '${ApiUrls.locationHistory}?uid=${selectedUser!.uid}&date=$formattedDate',
+      ),
     );
 
     final data = jsonDecode(response.body);

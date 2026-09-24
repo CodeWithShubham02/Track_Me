@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:joizone/admin/model/user_model.dart';
+import 'package:joizone/api_urls.dart';
 import '../controller/attendance_by_kiosk_controller.dart';
 import '../controller/attendance_controller.dart';
 import 'package:http/http.dart' as http;
@@ -169,7 +170,7 @@ class _OfficeAttendanceScreenState extends State<OfficeAttendanceScreen> {
     required DateTime date,
   }) async {
     final response = await http.post(
-      Uri.parse("https://trackme.joizone.com/attendance/updateHoliday.php"),
+      Uri.parse(ApiUrls.updateHoliday),
       body: {
         "id": id,
         "date": DateFormat('yyyy-MM-dd').format(date),

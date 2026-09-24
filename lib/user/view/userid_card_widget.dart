@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../admin/model/user_model.dart';
+import '../../api_urls.dart';
 import '../../handller/encription_decription.dart';
 
 class UserIdCardDialog extends StatefulWidget {
@@ -133,7 +134,7 @@ class _UserIdCardDialogState extends State<UserIdCardDialog> {
     try {
       final response = await http.post(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/update_user_img.php",
+          ApiUrls.updateUserImg
         ),
         body: {
           "uid": widget.user.uid,

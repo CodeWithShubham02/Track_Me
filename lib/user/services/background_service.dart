@@ -7,8 +7,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-const String trackingUrl =
-    "https://trackme.joizone.com/attendance/track_location.php";
+import '../../api_urls.dart';
+
+// const String trackingUrl =
+//     "https://trackme.joizone.com/attendance/track_location.php";
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
@@ -178,7 +180,7 @@ void onStart(ServiceInstance service) async {
 
         final response = await http
             .post(
-          Uri.parse(trackingUrl),
+          Uri.parse(ApiUrls.trackLocation),
           body: {
             "attendance_id":
             attendanceId!,

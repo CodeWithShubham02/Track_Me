@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:joizone/admin/model/user_model.dart';
+import 'package:joizone/api_urls.dart';
 import 'package:joizone/user/view/submitted_form_detail_screen.dart';
 
 class GetAllDynamicFormScreen extends StatefulWidget {
@@ -44,7 +45,7 @@ class _GetAllDynamicFormScreenState
       // get_branch_today_forms.php
       final response = await http.post(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/get_branch_today_forms.php",
+          ApiUrls.getBranchTodayForm
         ),
         body: {
           "cid": widget.userModel.cid,
@@ -70,7 +71,7 @@ class _GetAllDynamicFormScreenState
       // get_user_today_forms.php
       final response = await http.post(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/get_branch_today_forms.php",
+         ApiUrls.getBranchTodayForm
         ),
         body: {
           "cid": widget.userModel.cid,

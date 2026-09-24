@@ -15,16 +15,14 @@ import 'package:joizone/user/view/update_user_shift_screen.dart';
 import 'package:joizone/user/view/user_live_location_screen.dart';
 import 'package:joizone/user/view/userid_card_widget.dart';
 import 'package:joizone/user/view/users_performance_screen.dart';
-import 'package:joizone/user/view/video_dialog.dart';
-import 'package:joizone/user/view/video_dialogtl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-
 import '../../admin/controller/attendance_summary_controller.dart';
 import '../../admin/dynamic_form/dynamic_form_screen.dart';
 import '../../admin/model/attendance_summary_model.dart';
 import '../../admin/model/user_model.dart';
 import '../../admin/view/login_screen.dart';
+import '../../api_urls.dart';
 import '../../services/fcm_service.dart';
 import '../../services/get_server_key.dart';
 import '../../services/notification_service.dart';
@@ -485,7 +483,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/get_company_forms.php?cid=${widget.userModel.cid}",
+          '${ApiUrls.getCompanyForms}?cid=${widget.userModel.cid}',
         ),
       );
 
@@ -685,7 +683,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
 
     final res = await http.post(
       Uri.parse(
-        "https://trackme.joizone.com/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
+        '${ApiUrls.attendancePunchOut}?attendance_id=$savedAttendanceId',
       ),
       body: {
         "action": "punch_out",
@@ -746,7 +744,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
         try {
           final response = await http.post(
             Uri.parse(
-              "https://trackme.joizone.com/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
+              '${ApiUrls.attendancePunchOut}?attendance_id=$savedAttendanceId',
             ),
             body: {
               "action": "punch_out",
@@ -991,7 +989,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
 
       final response = await http.post(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
+          '${ApiUrls.attendancePunchOut}?attendance_id=$savedAttendanceId',
         ),
         body: {
           "action": "punch_out",
@@ -1050,7 +1048,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       if (internet) {
         await http.post(
           Uri.parse(
-            "https://trackme.joizone.com/attendance/track_location.php",
+           ApiUrls.trackLocation
           ),
           body: {
             "attendance_id": attendanceId!,
@@ -1171,7 +1169,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       print("BRANCH : $branchName");
       final response = await http.post(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/save_notification.php",
+            ApiUrls.saveNotification
         ),
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -1319,7 +1317,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   DateTime? breakStartTime;
   Future<bool> checkFeatureAccess() async {
     final response = await http.post(
-      Uri.parse("https://trackme.joizone.com/attendance/check_feature_access.php"),
+      Uri.parse(ApiUrls.checkFeatureAccess),
       body: {
         "tl_id": widget.userModel.uid.toString(),
         "feature_name": "UpdateUserShiftScreen",
@@ -1341,60 +1339,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
         backgroundColor: Colors.blue,
         title: const Text("Dashboard",style: TextStyle(color: Colors.white,fontSize: 22,fontFamily: 'impact'),),
         actions: [
-          // Stack(
-          //   children: [
-          //     CircleAvatar(
-          //       radius: 20,
-          //       backgroundColor: Colors.white,
-          //       child: IconButton(
-          //         icon: const Icon(
-          //           Icons.chat,
-          //           color: Colors.blue,
-          //         ),
-          //         onPressed: () {
-          //           Get.to(
-          //                 () => ChatbotScreen(
-          //               cid: widget.userModel.cid,
-          //               uid: widget.userModel.uid,
-          //                   name: widget.userModel.fullName,
-          //                   branchName: widget.userModel.branchName,
-          //             ),
-          //           );
-          //         },
-          //       ),
-          //     ),
-          //   ],
-          // ),
-          widget.userModel.departmentName == "Users"?
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.white,
-            child: IconButton(
-              icon: const Icon(Icons.play_circle,color: Colors.blue,),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => const VideoDialog(),
-                );
-              },
-            ),
-          ):
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.white,
-            child: IconButton(
-              icon: const Icon(
-                Icons.play_circle_outline,
-                color: Colors.blue,
-              ),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => const VideoDialogtl(),
-                );
-              },
-            ),
-          ),
+
           SizedBox(width: 5,),
           Stack(
             children: [
@@ -1579,7 +1524,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   ),
                 ),
                 Text(
-                  "1.1.3",
+                  ApiUrls.appVersionUser,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.normal,

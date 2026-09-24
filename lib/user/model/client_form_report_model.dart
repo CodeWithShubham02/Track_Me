@@ -5,6 +5,7 @@ class ClientFormReportModel {
   final String userName;
   final String cityName;
   final String siteName;
+  final String attendanceSiteName;
   final String reportDate;
   final String reportTime;
   late final String applicationNo;
@@ -30,6 +31,7 @@ class ClientFormReportModel {
     required this.userName,
     required this.cityName,
     required this.siteName,
+    required this.attendanceSiteName,
     required this.reportDate,
     required this.reportTime,
     required this.applicationNo,
@@ -57,6 +59,7 @@ class ClientFormReportModel {
       userName: json['user_name'] ?? '',
       cityName: json['city_name'] ?? '',
       siteName: json['site_name'] ?? '',
+      attendanceSiteName: json['attendance_site_name'] ?? '',
       reportDate: json['report_date'] ?? '',
       reportTime: json['report_time'] ?? '',
       applicationNo: json['application_no'] ?? '',

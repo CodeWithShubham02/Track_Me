@@ -39,15 +39,48 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
   }
 
   Future<void> loadUsers() async {
+    setState(() {
+      isLoading = true;
+    });
+
     users = await controller.fetchUsersInactive(widget.cid);
-    filteredUsers = users;
 
     branchList = users
         .map((e) => e.branchName)
+        .where((e) => e.isNotEmpty)
         .toSet()
         .toList();
 
-    setState(() => isLoading = false);
+    filteredUsers = users.where((u) {
+
+      final branchMatch =
+          selectedBranches.isEmpty ||
+              selectedBranches.contains(u.branchName);
+
+      final statusMatch =
+          selectedStatusFilter == null ||
+              selectedStatusFilter!.isEmpty ||
+              u.status.toLowerCase() ==
+                  selectedStatusFilter!.toLowerCase();
+
+      final fullName =
+      "${u.fullName} ${u.lastName}".trim().toLowerCase();
+
+      final nameMatch =
+          nameSearch.isEmpty ||
+              fullName.contains(nameSearch.toLowerCase());
+
+      return branchMatch &&
+          statusMatch &&
+          nameMatch;
+
+    }).toList();
+
+
+
+    setState(() {
+      isLoading = false;
+    });
   }
   List<String> states = [];
   List<String> cities = [];
@@ -448,7 +481,30 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
         ..setAttribute("download", fileName)
         ..click();
 
-      Get.snackbar("Success", "Downloading Excel file...");
+
+      Get.snackbar(
+        "Success",
+        "Download All (Active/Inactive) Users Excel File Successfully: $fileName",
+        snackPosition: SnackPosition.TOP,
+
+        backgroundColor: const Color(0xFF16A34A),
+        colorText: Colors.white,
+
+        icon: const Icon(
+          Icons.check_circle_outline,
+          color: Colors.white,
+          size: 22,
+        ),
+
+        margin: const EdgeInsets.all(16),
+        borderRadius: 10,
+
+        duration: const Duration(seconds: 5),
+
+        // Optional
+        snackStyle: SnackStyle.FLOATING,
+        isDismissible: true,
+      );
     } else {
       // 📱 ANDROID / IOS DOWNLOAD
 
@@ -624,18 +680,44 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
   void applyFilters() {
     setState(() {
       filteredUsers = users.where((u) {
-        // Branch filter
-        final branchMatch = selectedBranches.isEmpty ||
-            selectedBranches.contains(u.branchName);
 
-        // Status filter
-        final statusMatch = selectedStatusFilter == null ||
-            selectedStatusFilter!.isEmpty ||
-            u.status.toLowerCase() ==
-                selectedStatusFilter!.toLowerCase();
+        // =========================
+        // Branch Filter
+        // =========================
+        final branchMatch =
+            selectedBranches.isEmpty ||
+                selectedBranches.contains(u.branchName);
 
-        return branchMatch && statusMatch;
+        // =========================
+        // Status Filter
+        // =========================
+        final statusMatch =
+            selectedStatusFilter == null ||
+                selectedStatusFilter!.isEmpty ||
+                u.status.toLowerCase() ==
+                    selectedStatusFilter!.toLowerCase();
+
+        // =========================
+        // Name Filter
+        // =========================
+        final fullName =
+        "${u.fullName} ${u.lastName}".trim().toLowerCase();
+
+        final nameMatch =
+            nameSearch.isEmpty ||
+                fullName.contains(nameSearch.toLowerCase());
+
+        // =========================
+        // All filters
+        // =========================
+        return branchMatch &&
+            statusMatch &&
+            nameMatch;
+
       }).toList();
+
+      // Filter lagne ke baad first page
+
     });
   }
   void showStatusFilter() {
@@ -703,6 +785,69 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
               ],
             );
           },
+        );
+      },
+    );
+  }
+  String nameSearch = "";
+
+  void showNameFilter() {
+    final TextEditingController searchController =
+    TextEditingController(text: nameSearch);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(
+            "Filter by Full Name",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          content: TextField(
+            controller: searchController,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: "Search employee name...",
+              prefixIcon: const Icon(Icons.search),
+
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  searchController.clear();
+                },
+              ),
+
+              border: const OutlineInputBorder(),
+            ),
+          ),
+
+          actions: [
+
+            TextButton(
+              onPressed: () {
+                nameSearch = "";
+                applyFilters();
+
+                Navigator.pop(dialogContext);
+              },
+              child: const Text("Clear"),
+            ),
+
+            ElevatedButton(
+              onPressed: () {
+                nameSearch =
+                    searchController.text.trim().toLowerCase();
+
+                applyFilters();
+
+                Navigator.pop(dialogContext);
+              },
+              child: const Text("Apply"),
+            ),
+          ],
         );
       },
     );
@@ -801,7 +946,37 @@ class _InactiveUserScreenState extends State<InactiveUserScreen> {
                     ],
                   ),
                 ),
-                    DataColumn(label: Text("Full Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                    DataColumn(
+                      label: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            "Full Name",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              fontFamily: 'serif',
+                            ),
+                          ),
+
+                          const SizedBox(width: 4),
+
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            tooltip: "Filter by name",
+                            icon: Icon(
+                              Icons.filter_list,
+                              size: 18,
+                              color: nameSearch.isNotEmpty
+                                  ? const Color(0xff2563EB)
+                                  : Colors.grey,
+                            ),
+                            onPressed: showNameFilter,
+                          ),
+                        ],
+                      ),
+                    ),
                     DataColumn(label: Text("Image",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                     DataColumn(label: Text("IMEI",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
 

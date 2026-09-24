@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:joizone/api_urls.dart';
 
 class AttendanceController {
-  static const String url =
-      "https://trackme.joizone.com/attendance/fetch_attendance_by_kiosk.php";
+  // static const String url =
+  //     "https://trackme.joizone.com/attendance/fetch_attendance_by_kiosk.php";
 
   static Future<List<Map<String, dynamic>>> fetchAttendance({
     required String officeName,
@@ -12,7 +13,7 @@ class AttendanceController {
   }) async {
 
     final response = await http.post(
-      Uri.parse(url),
+      Uri.parse(ApiUrls.fetchAttendanceByKiosk),
       body: {
         "office_name": officeName,
         "from_date": fromDate,

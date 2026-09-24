@@ -1,22 +1,17 @@
 import 'dart:convert';
-import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:confetti/confetti.dart';
-import 'package:excel/excel.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:joizone/admin/model/user_model.dart';
+import 'package:joizone/api_urls.dart';
 import 'package:joizone/services/notification_service.dart';
 import 'package:joizone/user/controller/user_login_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../user/view/employee_screen.dart';
 import 'admin_home_screen.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
+
 
 
 class LoginScreen extends StatefulWidget {
@@ -735,7 +730,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 15),
 
                       Text(
-                        "Version 1.1.3",
+                        "Version ${ApiUrls.appVersionAdmin}",
                         style: TextStyle(
                           color: Colors.grey.shade600,
                         ),

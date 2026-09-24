@@ -63,7 +63,7 @@ class _ShiftScreenState extends State<ShiftScreen> {
           ),
         ),
         iconTheme: IconThemeData(color: Colors.white),
-        title: const Text("Shifts Master",style: TextStyle(color: Colors.white,fontSize: 18),),
+        title: const Text("All Shifts",style: TextStyle(color: Colors.white,fontSize: 18),),
         backgroundColor: Colors.blue,
       ),
       floatingActionButton: FloatingActionButton(
@@ -171,12 +171,12 @@ class _ShiftScreenState extends State<ShiftScreen> {
           TextField(
             controller: startCtrl,
             decoration:
-            const InputDecoration(labelText: "Start (HH:mm)"),
+            const InputDecoration(labelText: "Start (HH:mm)-(07:00)"),
           ),
           TextField(
             controller: endCtrl,
             decoration:
-            const InputDecoration(labelText: "End (HH:mm)"),
+            const InputDecoration(labelText: "End (HH:mm)-(15:00)"),
           ),
         ],
       ),

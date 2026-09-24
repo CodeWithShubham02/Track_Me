@@ -23,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../admin/controller/shift_controller.dart';
 import '../../admin/model/shift_model.dart';
+import '../../api_urls.dart';
 import '../../handller/encription_decription.dart';
 
 class PunchInOutScreen extends StatefulWidget {
@@ -463,12 +464,12 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
       throw 'Shift already ended';
     }
     /// 🔥 TEAM LEADER OVERRIDE
-    if (department == 'Team Leader') {
-      return {
-        "status": "Present",
-        "late": "On Time",
-      };
-    }
+    // if (department == 'Team Leader') {
+    //   return {
+    //     "status": "Present",
+    //     "late": "On Time",
+    //   };
+    // }
     // ✅ Late logic
     String status = "";
     String lateText = "";
@@ -533,7 +534,7 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
       await http.post(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/attendance_punch_out.php?attendance_id=$savedAttendanceId",
+          '${ApiUrls.attendancePunchOut}?attendance_id=$savedAttendanceId',
         ),
         body: {
           "action": "punch_out",
@@ -586,7 +587,7 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
           final res = await http.post(
             Uri.parse(
-              "https://trackme.joizone.com/attendance/track_location.php",
+              ApiUrls.trackLocation
             ),
             body: {
               "attendance_id": attendanceId!,
@@ -607,6 +608,22 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
   String? selectBranchName;
 
+  DateTime parseShiftTime(String time) {
+    final parts = time.split(':');
+
+    final now = DateTime.now();
+
+    return DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+      parts.length > 2
+          ? int.parse(parts[2])
+          : 0,
+    );
+  }
   Future<void> punchIn() async {
     // 1️⃣ Distance check
     if (currentDistance == null || currentDistance! > officeRange) {
@@ -615,7 +632,7 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
     // 2️⃣ Fetch employee shift from API
     final empRes = await http.post(
-      Uri.parse("https://trackme.joizone.com/attendance/get_users.php"),
+      Uri.parse(ApiUrls.getUsers),
       body: {
         "uid": widget.userModel.uid,
         "cid": widget.userModel.cid,
@@ -649,14 +666,25 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
     print(status['late'].toString());
     print("-----------------");
     final isTeamLeader =
-        widget.userModel.departmentName.toString()== "Team Leader";
+        widget.userModel.departmentName.toString()==
+            "Team Leader";
 
     // ⭐ Sirf Team Leader ke liye shift compulsory
+    Map<String, dynamic>? teamStatus;
+
+// ⭐ Sirf Team Leader ke liye selected shift compulsory
     if (isTeamLeader) {
       if (selectedShiftStart == null ||
           selectedShiftEnd == null) {
         throw "Please select shift";
       }
+
+      // ⭐ Team Leader ke selected shift ke according status
+      teamStatus = getPunchStatus(
+        shiftStart: parseShiftTime(selectedShiftStart!),
+        shiftEnd: parseShiftTime(selectedShiftEnd!),
+        department: "Team Leader",
+      );
     }
     print("========== SHIFT DEBUG ==========");
     print("Department: '${widget.userModel.departmentName}'");
@@ -670,13 +698,17 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
     // 4️⃣ Call Punch-In API
     final res = await http.post(
-      Uri.parse("https://trackme.joizone.com/attendance/attendance_punch_in.php"),
+      Uri.parse(ApiUrls.punchIn),
       body: {
         "uid": widget.userModel.uid,
         "cid": widget.userModel.cid,
-        'status': status['status'],
-        // ✅ FIXED
-        "late":status['late'].toString(), // 0 ya 1
+        "status": isTeamLeader
+            ? teamStatus!['status'].toString()
+            : status['status'].toString(),
+
+        "late": isTeamLeader
+            ? teamStatus!['late'].toString()
+            : status['late'].toString(), // 0 ya 1
         "distance": currentDistance!.toString(),
         "department": widget.userModel.departmentName,
         "name": widget.userModel.fullName,
@@ -794,7 +826,7 @@ print(res);
     try {
       await http.post(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/track_location.php",
+          ApiUrls.punchOut
         ),
         body: {
           "attendance_id": attendanceId!,
@@ -856,8 +888,7 @@ print(res);
 
       final res = await http.post(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/attendance_punch_out.php"
-              "?attendance_id=$attendanceId",
+          '${ApiUrls.attendancePunchOut}?attendance_id=$attendanceId',
         ),
         body: {
           "action": "punch_out",

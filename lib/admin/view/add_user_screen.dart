@@ -114,7 +114,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
       dateOfJoining: apiDate, // DD-MM-YYYY or YYYY-MM-DD
       imeiNo: "",
       middleName: middleNameCtrl.text,
-      lastName: lastNameCtrl.text,
+      lastName: lastNameCtrl.text,//lastNameCtrl.text
       cityName: cityNameCtrl.text,
       districtName: districtNameCtrl.text,
       pinCodeName: pinCodeCtrl.text,
@@ -581,7 +581,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
         backgroundColor: Colors.blue,
         iconTheme: IconThemeData(color: Colors.white),
         title: const Text(
-          "Create New Employee",
+          "Create New User",
           style: TextStyle(color: Colors.white, fontSize: 18),
         ),
       ),
@@ -639,7 +639,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                     child: TextFormField(
                       controller: nameCtrl,
                       decoration: const InputDecoration(
-                        labelText: "First Name *",
+                        labelText: "Full Name *",
                         border: OutlineInputBorder(),
                       ),
                     ),

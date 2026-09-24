@@ -3,6 +3,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../../api_urls.dart';
+
 class AttendanceScreen extends StatefulWidget {
   final String cid;
   final String uid;
@@ -43,7 +45,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     print("cid : ${widget.cid}");
     print("uid : ${widget.uid}");
     final response = await http.post(
-      Uri.parse("https://trackme.joizone.com/attendance/fetch_attendance_by_id.php"),
+      Uri.parse(ApiUrls.fetchAttendanceByid),
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },

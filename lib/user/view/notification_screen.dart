@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../api_urls.dart';
+
 class NotificationScreen extends StatefulWidget {
   final String cid;
   final String uid;
@@ -33,7 +35,7 @@ class _NotificationScreenState
     try {
       final response = await http.get(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/get_notification.php?cid=${widget.cid}&uid=${widget.uid}",
+          '${ApiUrls.getNotification}?cid=${widget.cid}&uid=${widget.uid}',
         ),
       );
 
@@ -56,7 +58,7 @@ class _NotificationScreenState
     try {
       final response = await http.post(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/update_notification_status.php",
+          ApiUrls.updateNotification
         ),
         body: {
           "id": id,

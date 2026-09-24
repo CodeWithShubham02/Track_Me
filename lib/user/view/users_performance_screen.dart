@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../../admin/model/user_model.dart';
+import '../../api_urls.dart';
 
 class UsersPerformanceScreen extends StatefulWidget {
   final String branchName;
@@ -60,7 +61,7 @@ class _UsersPerformanceScreenState extends State<UsersPerformanceScreen> {
 
       final response = await http.post(
         Uri.parse(
-          "https://trackme.joizone.com/attendance/weekly_team_performance.php",
+          ApiUrls.weeklyTeamPerformance
         ),
         body: {
           "cid": widget.cid,

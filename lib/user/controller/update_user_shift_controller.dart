@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:joizone/api_urls.dart';
 
 class UpdateUserShiftController {
 
@@ -11,7 +12,7 @@ class UpdateUserShiftController {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse("https://trackme.joizone.com/attendance/update_user_shift.php"),
+        Uri.parse(ApiUrls.updateUserShift),
         body: {
           "cid": cid,
           "uid": uid,

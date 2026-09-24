@@ -6,9 +6,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import '../../api_urls.dart';
+
 class UserController {
-  final String baseUrl =
-      "https://trackme.joizone.com/attendance";
+  // final String baseUrl =
+  //     "https://trackme.joizone.com/attendance";
  // http://trackme.joizone.com/trackme/
   // =========================================================
   // DEVICE ID
@@ -233,7 +235,7 @@ class UserController {
       final response = await http.post(
 
         Uri.parse(
-          "$baseUrl/loginUser.php",
+         ApiUrls.loginUser
         ),
 
         headers: {

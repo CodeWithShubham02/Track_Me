@@ -66,7 +66,7 @@ class _BranchListScreenState extends State<BranchListScreen> {
           iconTheme: IconThemeData(
             color: Colors.white
           ),
-          title: const Text("All Kiosk",style: TextStyle(color: Colors.white,fontSize: 18,fontFamily: 'impact'),),
+          title: const Text("All Branch",style: TextStyle(color: Colors.white,fontSize: 18,fontFamily: 'impact'),),
         actions: [
           ElevatedButton(
             onPressed: () {
@@ -86,7 +86,7 @@ class _BranchListScreenState extends State<BranchListScreen> {
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
-            child: const Text("Inactive Kiosk"),
+            child: const Text("Inactive Branch"),
           ),
           SizedBox(width: 20,)
         ],

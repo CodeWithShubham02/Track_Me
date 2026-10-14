@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:joizone/admin/controller/update_manual_controller.dart';
 import 'package:joizone/admin/view/add_attedance.dart';
 import 'package:joizone/admin/view/shift_screen.dart';
 import 'package:path_provider/path_provider.dart';
@@ -16,6 +17,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../api_urls.dart';
 import 'assign_holiday_screen.dart';
 import 'holiday_screen.dart';
 import 'monthly_attendance_screen.dart';
@@ -528,6 +530,364 @@ class _AllEmployeeAttendanceScreenState
     return json["status"] == true;
   }
   //----------------------------
+  ///-----------Edit Attendance---------
+  final UpdateManualController updateManualController=UpdateManualController();
+  Future<void> showEditPunchOutDialog(
+      BuildContext context,
+      Map<String, dynamic> attendance,
+      String attendanceId,
+      ) async {
+
+    final punchOutTimeCtrl = TextEditingController(
+      text: attendance['punch_out_time']?.toString() ?? '',
+    );
+
+    final punchOutLatCtrl = TextEditingController(
+      text: attendance['punch_out_lat']?.toString() ?? '',
+    );
+
+    final punchOutLngCtrl = TextEditingController(
+      text: attendance['punch_out_lng']?.toString() ?? '',
+    );
+
+    final remarkCtrl = TextEditingController(
+      text: attendance['punch_out_remark']?.toString() ?? '',
+    );
+
+    final imageCtrl = TextEditingController(
+      text: attendance['punch_out_image']?.toString() ?? '',
+    );
+
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+
+        bool isSaving = false;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+
+            return AlertDialog(
+
+              title: const Row(
+                children: [
+                  Icon(Icons.edit),
+                  SizedBox(width: 8),
+                  Text("Edit Punch Out"),
+                ],
+              ),
+
+              content: SizedBox(
+                width: 500,
+
+                child: SingleChildScrollView(
+
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+
+                    children: [
+
+                      // Employee
+                      TextField(
+                        readOnly: true,
+
+                        decoration: const InputDecoration(
+                          labelText: "Employee",
+                          border: OutlineInputBorder(),
+                        ),
+
+                        controller: TextEditingController(
+                          text: attendance['name']?.toString() ?? '',
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+
+                      // Punch Out Time
+                      TextField(
+                        controller: punchOutTimeCtrl,
+
+                        decoration: const InputDecoration(
+                          labelText: "Punch Out Time",
+                          hintText: "YYYY-MM-DD HH:MM:SS",
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.access_time),
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+
+                      // Latitude
+                      TextField(
+                        controller: punchOutLatCtrl,
+
+                        decoration: const InputDecoration(
+                          labelText: "Punch Out Latitude",
+                          hintText: "19.0760",
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.location_on),
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+
+                      // Longitude
+                      TextField(
+                        controller: punchOutLngCtrl,
+
+                        decoration: const InputDecoration(
+                          labelText: "Punch Out Longitude",
+                          hintText: "72.8777",
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.location_on),
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+
+                      // Remark
+                      TextField(
+                        controller: remarkCtrl,
+
+                        maxLines: 3,
+
+                        decoration: const InputDecoration(
+                          labelText: "Punch Out Remark",
+                          hintText: "Enter reason...",
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.notes),
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+
+                      // Image
+                      TextField(
+                        controller: imageCtrl,
+
+                        decoration: const InputDecoration(
+                          labelText: "Punch Out Image",
+                          hintText: "Image URL",
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.image),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+
+              actions: [
+
+                TextButton(
+                  onPressed: isSaving
+                      ? null
+                      : () {
+                    Navigator.pop(
+                      dialogContext,
+                      false,
+                    );
+                  },
+
+                  child: const Text("Cancel"),
+                ),
+
+
+                ElevatedButton.icon(
+
+                  icon: isSaving
+                      ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  )
+                      : const Icon(Icons.save),
+
+                  label: Text(
+                    isSaving ? "Updating..." : "Update",
+                  ),
+
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+
+                    // Validation
+                    if (punchOutTimeCtrl.text.trim().isEmpty) {
+
+                      Get.snackbar(
+                        "Required",
+                        "Punch Out Time is required",
+                        snackPosition: SnackPosition.TOP,
+                      );
+
+                      return;
+                    }
+
+
+                    setDialogState(() {
+                      isSaving = true;
+                    });
+
+
+                    final success =
+                    await updateManualController.updateManualPunchOut(
+
+                      attendanceId: attendanceId,
+
+                      punchOutTime:
+                      punchOutTimeCtrl.text.trim(),
+
+                      punchOutLat:
+                      punchOutLatCtrl.text.trim(),
+
+                      punchOutLng:
+                      punchOutLngCtrl.text.trim(),
+
+                      punchOutRemark:
+                      remarkCtrl.text.trim(),
+
+                      punchOutImage:
+                      imageCtrl.text.trim(),
+                    );
+
+
+                    if (success) {
+
+                      if (dialogContext.mounted) {
+                        Navigator.pop(
+                          dialogContext,
+                          true,
+                        );
+                      }
+
+                    } else {
+
+                      setDialogState(() {
+                        isSaving = false;
+                      });
+                    }
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+
+    // Dispose
+    punchOutTimeCtrl.dispose();
+    punchOutLatCtrl.dispose();
+    punchOutLngCtrl.dispose();
+    remarkCtrl.dispose();
+    imageCtrl.dispose();
+
+
+    if (result == true) {
+
+      // yahan attendance list refresh karo
+      await fetchAttendanceByDate();
+
+      Get.snackbar(
+        "Success",
+        "Attendance updated successfully",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    }
+  }
+  //------------
+  Future<bool> updateUserRosterShift({
+    required String uid,
+    required String cid,
+    required DateTime date,
+    required String shiftStart,
+    required String shiftEnd,
+  }) async {
+    try {
+      final rosterDate =
+          "${date.year.toString().padLeft(4, '0')}-"
+          "${date.month.toString().padLeft(2, '0')}-"
+          "${date.day.toString().padLeft(2, '0')}";
+
+      final response = await http.post(
+        Uri.parse(ApiUrls.updateUserRosterShift),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          "uid": uid,
+          "cid": cid,
+          "roster_date": rosterDate,
+          "shift_start": shiftStart,
+          "shift_end": shiftEnd,
+        }),
+      );
+
+      print("=================================");
+      print("UPDATE USER SHIFT API");
+      print("=================================");
+      print("UID: $uid");
+      print("CID: $cid");
+      print("Date: $rosterDate");
+      print("Start: $shiftStart");
+      print("End: $shiftEnd");
+      print("Status: ${response.statusCode}");
+      print("Response: ${response.body}");
+      print("=================================");
+
+      if (response.statusCode != 200) {
+        return false;
+      }
+
+      final data = jsonDecode(response.body);
+
+      if (data['status'] == true) {
+        return true;
+      }
+
+      Get.snackbar(
+        "Update Failed",
+        data['message'] ?? "Unable to update shift",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+
+      return false;
+    } catch (e) {
+      print("Update shift error: $e");
+
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+
+      return false;
+    }
+  }
+  String formatTime24(TimeOfDay time) {
+    return "${time.hour.toString().padLeft(2, '0')}:"
+        "${time.minute.toString().padLeft(2, '0')}:00";
+  }
+  String formatDate(DateTime date) {
+    return "${date.year.toString().padLeft(4, '0')}-"
+        "${date.month.toString().padLeft(2, '0')}-"
+        "${date.day.toString().padLeft(2, '0')}";
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredRecords = attendanceRecords.where((row) {
@@ -680,7 +1040,7 @@ class _AllEmployeeAttendanceScreenState
                           width: 1,
                         ),
                         columns: [
-                          const DataColumn(label: Text("Location",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
+                          const DataColumn(label: Text("Action",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                           const DataColumn(label: Text("Date",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                           const DataColumn(label: Text("userid",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15,fontFamily: 'serif'),)),
                           //const DataColumn(label: Text("aid")),
@@ -716,7 +1076,7 @@ class _AllEmployeeAttendanceScreenState
                                 InkWell(
                                   onTap: () {
                                     showMultiFilterDialog(
-                                      title: "Side Name",
+                                      title: "Site Name",
                                       options: getUniqueValues('office_name'),
                                       selectedValues: selectedOffice,
                                     );
@@ -959,11 +1319,429 @@ class _AllEmployeeAttendanceScreenState
                                               );
                                             },
                                             icon: const Icon(
-                                              Icons.edit,
+                                              Icons.date_range,
                                               color:   Colors.redAccent,
                                             ),
                                           )
                                         : const SizedBox.shrink(),
+                                    e['status'] == 'HOLYDAY'
+                                        ? IconButton(
+                                      onPressed: () async {
+                                        print("=================================");
+                                        print("UPDATE USER SHIFT");
+                                        print("UID: ${e['uid']}");
+                                        print("CID: ${e['cid']}");
+                                        print("=================================");
+
+                                        DateTime? selectedDate;
+
+                                        TimeOfDay selectedStartTime = const TimeOfDay(
+                                          hour: 15,
+                                          minute: 0,
+                                        );
+
+                                        TimeOfDay selectedEndTime = const TimeOfDay(
+                                          hour: 23,
+                                          minute: 0,
+                                        );
+
+                                        await showDialog(
+                                          context: context,
+                                          builder: (dialogContext) {
+                                            return StatefulBuilder(
+                                              builder: (context, setDialogState) {
+                                                return AlertDialog(
+                                                  title: Text(
+                                                    "Update User Shift - ${e['name']}",
+                                                  ),
+
+                                                  content: SingleChildScrollView(
+                                                    child: Column(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+
+                                                        // ----------------------------------
+                                                        // SELECT DATE
+                                                        // ----------------------------------
+
+                                                        InkWell(
+                                                          onTap: () async {
+                                                            final picked =
+                                                            await showDatePicker(
+                                                              context: context,
+
+                                                              initialDate:
+                                                              DateTime.now(),
+
+                                                              firstDate:
+                                                              DateTime(2020),
+
+                                                              lastDate:
+                                                              DateTime(2050),
+                                                            );
+
+                                                            if (picked != null) {
+                                                              setDialogState(() {
+                                                                selectedDate = picked;
+                                                              });
+                                                            }
+                                                          },
+
+                                                          child: Container(
+                                                            width: double.infinity,
+                                                            padding:
+                                                            const EdgeInsets.all(14),
+
+                                                            decoration: BoxDecoration(
+                                                              border:
+                                                              Border.all(
+                                                                color: Colors.grey,
+                                                              ),
+                                                              borderRadius:
+                                                              BorderRadius.circular(8),
+                                                            ),
+
+                                                            child: Row(
+                                                              children: [
+
+                                                                const Icon(
+                                                                  Icons.calendar_month,
+                                                                  color:
+                                                                  Color(0xff2563EB),
+                                                                ),
+
+                                                                const SizedBox(width: 10),
+
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    selectedDate == null
+                                                                        ? "Select Date"
+                                                                        : formatDate(
+                                                                      selectedDate!,
+                                                                    ),
+                                                                    style:
+                                                                    const TextStyle(
+                                                                      fontSize: 16,
+                                                                    ),
+                                                                  ),
+                                                                ),
+
+                                                                const Icon(
+                                                                  Icons.arrow_drop_down,
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+
+                                                        const SizedBox(height: 15),
+
+                                                        // ----------------------------------
+                                                        // SHIFT START
+                                                        // ----------------------------------
+
+                                                        InkWell(
+                                                          onTap: () async {
+                                                            final picked =
+                                                            await showTimePicker(
+                                                              context: context,
+                                                              initialTime:
+                                                              selectedStartTime,
+                                                            );
+
+                                                            if (picked != null) {
+                                                              setDialogState(() {
+                                                                selectedStartTime =
+                                                                    picked;
+                                                              });
+                                                            }
+                                                          },
+
+                                                          child: Container(
+                                                            width: double.infinity,
+                                                            padding:
+                                                            const EdgeInsets.all(14),
+
+                                                            decoration: BoxDecoration(
+                                                              border:
+                                                              Border.all(
+                                                                color: Colors.grey,
+                                                              ),
+                                                              borderRadius:
+                                                              BorderRadius.circular(8),
+                                                            ),
+
+                                                            child: Row(
+                                                              children: [
+
+                                                                const Icon(
+                                                                  Icons.login,
+                                                                  color: Colors.green,
+                                                                ),
+
+                                                                const SizedBox(width: 10),
+
+                                                                const Text(
+                                                                  "Shift Start",
+                                                                  style:
+                                                                  TextStyle(
+                                                                    fontWeight:
+                                                                    FontWeight.w500,
+                                                                  ),
+                                                                ),
+
+                                                                const Spacer(),
+
+                                                                Text(
+                                                                  formatTime24(
+                                                                    selectedStartTime,
+                                                                  ),
+                                                                  style:
+                                                                  const TextStyle(
+                                                                    fontWeight:
+                                                                    FontWeight.bold,
+                                                                  ),
+                                                                ),
+
+                                                                const SizedBox(width: 5),
+
+                                                                const Icon(
+                                                                  Icons.access_time,
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+
+                                                        const SizedBox(height: 15),
+
+                                                        // ----------------------------------
+                                                        // SHIFT END
+                                                        // ----------------------------------
+
+                                                        InkWell(
+                                                          onTap: () async {
+                                                            final picked =
+                                                            await showTimePicker(
+                                                              context: context,
+                                                              initialTime:
+                                                              selectedEndTime,
+                                                            );
+
+                                                            if (picked != null) {
+                                                              setDialogState(() {
+                                                                selectedEndTime =
+                                                                    picked;
+                                                              });
+                                                            }
+                                                          },
+
+                                                          child: Container(
+                                                            width: double.infinity,
+                                                            padding:
+                                                            const EdgeInsets.all(14),
+
+                                                            decoration: BoxDecoration(
+                                                              border:
+                                                              Border.all(
+                                                                color: Colors.grey,
+                                                              ),
+                                                              borderRadius:
+                                                              BorderRadius.circular(8),
+                                                            ),
+
+                                                            child: Row(
+                                                              children: [
+
+                                                                const Icon(
+                                                                  Icons.logout,
+                                                                  color: Colors.red,
+                                                                ),
+
+                                                                const SizedBox(width: 10),
+
+                                                                const Text(
+                                                                  "Shift End",
+                                                                  style:
+                                                                  TextStyle(
+                                                                    fontWeight:
+                                                                    FontWeight.w500,
+                                                                  ),
+                                                                ),
+
+                                                                const Spacer(),
+
+                                                                Text(
+                                                                  formatTime24(
+                                                                    selectedEndTime,
+                                                                  ),
+                                                                  style:
+                                                                  const TextStyle(
+                                                                    fontWeight:
+                                                                    FontWeight.bold,
+                                                                  ),
+                                                                ),
+
+                                                                const SizedBox(width: 5),
+
+                                                                const Icon(
+                                                                  Icons.access_time,
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+
+                                                        const SizedBox(height: 15),
+
+                                                        // ----------------------------------
+                                                        // PREVIEW
+                                                        // ----------------------------------
+
+                                                        if (selectedDate != null)
+                                                          Container(
+                                                            width: double.infinity,
+                                                            padding:
+                                                            const EdgeInsets.all(12),
+
+                                                            decoration: BoxDecoration(
+                                                              color:
+                                                              Colors.blue.shade50,
+                                                              borderRadius:
+                                                              BorderRadius.circular(8),
+                                                            ),
+
+                                                            child: Column(
+                                                              crossAxisAlignment:
+                                                              CrossAxisAlignment.start,
+                                                              children: [
+
+                                                                Text(
+                                                                  "Date: ${formatDate(selectedDate!)}",
+                                                                  style:
+                                                                  const TextStyle(
+                                                                    fontWeight:
+                                                                    FontWeight.bold,
+                                                                  ),
+                                                                ),
+
+                                                                const SizedBox(height: 5),
+
+                                                                Text(
+                                                                  "Shift: "
+                                                                      "${formatTime24(selectedStartTime)}"
+                                                                      " - "
+                                                                      "${formatTime24(selectedEndTime)}",
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  ),
+
+                                                  // ----------------------------------
+                                                  // ACTIONS
+                                                  // ----------------------------------
+
+                                                  actions: [
+
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(dialogContext);
+                                                      },
+                                                      child:
+                                                      const Text("Cancel"),
+                                                    ),
+
+                                                    ElevatedButton(
+                                                      onPressed: () async {
+
+                                                        // ----------------------------
+                                                        // DATE REQUIRED
+                                                        // ----------------------------
+
+                                                        if (selectedDate == null) {
+
+                                                          ScaffoldMessenger.of(context)
+                                                              .showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                "Please select date",
+                                                              ),
+                                                              backgroundColor:
+                                                              Colors.red,
+                                                            ),
+                                                          );
+
+                                                          return;
+                                                        }
+
+                                                        // ----------------------------
+                                                        // UPDATE
+                                                        // ----------------------------
+
+                                                        final success =
+                                                        await updateUserRosterShift(
+                                                          uid: e['uid'].toString(),
+
+                                                          cid: e['cid'].toString(),
+
+                                                          date: selectedDate!,
+
+                                                          shiftStart:
+                                                          formatTime24(
+                                                            selectedStartTime,
+                                                          ),
+
+                                                          shiftEnd:
+                                                          formatTime24(
+                                                            selectedEndTime,
+                                                          ),
+                                                        );
+
+                                                        if (success) {
+
+                                                          Navigator.pop(
+                                                            dialogContext,
+                                                          );
+
+                                                          await fetchAttendanceByDate();
+
+                                                          if (mounted) {
+                                                            setState(() {});
+                                                          }
+
+                                                          ScaffoldMessenger.of(
+                                                              context)
+                                                              .showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                "User shift updated successfully",
+                                                              ),
+                                                              backgroundColor:
+                                                              Colors.green,
+                                                            ),
+                                                          );
+                                                        }
+                                                      },
+
+                                                      child:
+                                                      const Text("Update"),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          },
+                                        );
+                                      },
+
+                                      icon: const Icon(
+                                        Icons.watch_later_outlined,
+                                        color: Colors.redAccent,
+                                      ),
+                                    ) : const SizedBox.shrink(),
                                     IconButton(
                                       icon: const Icon(
                                         Icons.delete,
@@ -1035,6 +1813,25 @@ class _AllEmployeeAttendanceScreenState
                                           // 🔙 Go back & notify previous screen
                                           Navigator.pop(context, true);
                                         }
+                                      },
+                                      onLongPress: () async {
+
+                                        final attendanceId = e['id']?.toString();
+
+                                        if (attendanceId == null || attendanceId == '-') {
+                                          Get.snackbar(
+                                            "Error",
+                                            "Attendance ID not found",
+                                            snackPosition: SnackPosition.TOP,
+                                          );
+                                          return;
+                                        }
+
+                                        await showEditPunchOutDialog(
+                                          context,
+                                          e,
+                                          attendanceId,
+                                        );
                                       },
                                     ),
                                   ],

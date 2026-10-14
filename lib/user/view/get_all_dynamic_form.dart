@@ -37,64 +37,123 @@ class _GetAllDynamicFormScreenState
   }
 
   Future<void> fetchForms() async {
-
     setState(() {
       loading = true;
     });
-    if (widget.userModel.departmentName == "Team Leader") {
-      // get_branch_today_forms.php
-      final response = await http.post(
-        Uri.parse(
-          ApiUrls.getBranchTodayForm
-        ),
-        body: {
-          "cid": widget.userModel.cid,
-          "branch_name": widget.userModel.branchName,
-          "date": DateFormat("yyyy-MM-dd").format(selectedDate),
-        },
-      );
-      final json = jsonDecode(response.body);
-      print("============================get-dynamic========================");
-      print(json);
-      print("====================================================");
-      if (json["status"] == true) {
-        formList = json["data"];
+
+    try {
+      final branchNames = widget.userModel.branchMap
+          .map(
+            (branch) =>
+        branch['branch_name']?.toString().trim() ?? '',
+      )
+          .where((name) => name.isNotEmpty)
+          .toSet()
+          .toList();
+
+      final date = DateFormat("yyyy-MM-dd").format(selectedDate);
+
+      print("========== USER ROLE ==========");
+      print(widget.userModel.departmentName);
+
+      print("========== USER BRANCHES ==========");
+      print(branchNames);
+
+      print("========== DATE ==========");
+      print(date);
+
+      if (widget.userModel.departmentName == "Team Leader") {
+        // =====================================================
+        // TEAM LEADER
+        // MULTIPLE BRANCHES
+        // =====================================================
+
+        if (branchNames.isEmpty) {
+          setState(() {
+            formList = [];
+            loading = false;
+          });
+          return;
+        }
+
+        final response = await http.post(
+          Uri.parse(ApiUrls.getBranchTodayForm),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: jsonEncode({
+            "cid": widget.userModel.cid,
+            "branch_name": branchNames,
+            "date": date,
+          }),
+        );
+
+        print("========== API STATUS ==========");
+        print(response.statusCode);
+
+        print("========== API RESPONSE ==========");
+        print(response.body);
+
+        final json = jsonDecode(response.body);
+
+        if (json["status"] == true) {
+          setState(() {
+            formList = json["data"] ?? [];
+          });
+        } else {
+          setState(() {
+            formList = [];
+          });
+        }
       } else {
-        formList = [];
+        // =====================================================
+        // NORMAL USER
+        // SINGLE BRANCH
+        // =====================================================
+
+        final response = await http.post(
+          Uri.parse(ApiUrls.getBranchTodayForm),
+          body: {
+            "cid": widget.userModel.cid,
+            "branch_name": widget.userModel.branchName,
+            "date": date,
+          },
+        );
+
+        print("========== API STATUS ==========");
+        print(response.statusCode);
+
+        print("========== API RESPONSE ==========");
+        print(response.body);
+
+        final json = jsonDecode(response.body);
+
+        if (json["status"] == true) {
+          setState(() {
+            formList = json["data"] ?? [];
+          });
+        } else {
+          setState(() {
+            formList = [];
+          });
+        }
       }
+    } catch (e, stackTrace) {
+      print("❌ Fetch Forms Error: $e");
+      print(stackTrace);
+
+      if (!mounted) return;
 
       setState(() {
-        loading = false;
-      });
-
-    } else {
-      // get_user_today_forms.php
-      final response = await http.post(
-        Uri.parse(
-         ApiUrls.getBranchTodayForm
-        ),
-        body: {
-          "cid": widget.userModel.cid,
-          "branch_name": widget.userModel.branchName,
-          "date": DateFormat("yyyy-MM-dd").format(selectedDate),
-        },
-      );
-      final json = jsonDecode(response.body);
-      if (json["status"] == true) {
-        formList = json["data"];
-      } else {
         formList = [];
-      }
-
-      setState(() {
-        loading = false;
       });
-
+    } finally {
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
     }
-
-
-
-
   }
 
   Future<void> pickDate() async {

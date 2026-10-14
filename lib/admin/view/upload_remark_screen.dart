@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:http/http.dart' as http;
 import 'package:joizone/admin/view/all_form_report_screen.dart';
 
@@ -61,17 +63,23 @@ class _UploadRemarkScreenState extends State<UploadRemarkScreen> {
 
       if (data["status"] == true) {
         int uploadedCount = rows.length;
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (_) => const AllFormReportScreen(),
-        //   ),
-        // );
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text("Upload Remark Successful. $uploadedCount file uploaded"),
-             duration: const Duration(seconds: 4),),
+        // Clear Excel data and refresh the screen
+        if (!mounted) return;
 
+        setState(() {
+          excelData.clear();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Upload Remark Successful. $uploadedCount records uploaded.",
+            ),
+            duration: const Duration(seconds: 5),
+            backgroundColor: Colors.green,
+          ),
         );
+        //i want to after upload screen refresh
+        //Get.back();
 
       } else {
 
@@ -153,11 +161,11 @@ class _UploadRemarkScreenState extends State<UploadRemarkScreen> {
       "Variant",
       "Status",
       "Remarks",
-      "Manager Remarks",
       "Snapshot",
       "Contact No",
       "Address",
       "Kiosk Name",
+      "Site Name",
       "Bank Remark",
       "RemarksDate",
     ];

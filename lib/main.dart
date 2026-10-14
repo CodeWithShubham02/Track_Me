@@ -197,10 +197,10 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
 
-      home: LoginScreen(),
+     //home: LoginScreen(),
 
       // Agar Admin test karna ho:
- //home: AdminHomeScreen(cid: "1"),
+     home: AdminHomeScreen(cid: "1"),
     );
   }
 }

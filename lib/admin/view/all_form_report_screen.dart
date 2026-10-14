@@ -8,6 +8,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
+import 'package:joizone/admin/view/bulk_upload_form_screen.dart';
 import 'package:joizone/admin/view/upload_remark_screen.dart';
 import 'package:joizone/user/model/client_form_report_model.dart';
 import 'package:path_provider/path_provider.dart';
@@ -1935,7 +1936,27 @@ class _AllFormReportScreenState extends State<AllFormReportScreen> {
           style: TextStyle(color: Colors.white, fontSize: 18),
         ),
         actions: [
+          SizedBox(width: 20,),
+          ElevatedButton(
+            onPressed: () async {
+              await Get.to(
+                    () => BulkUploadFormScreen(
+                  cid: widget.cid,
+                ),
+              );
 
+              // User returned from inactive screen
+              if (mounted) {
+                refreshReports();
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+            child: const Text("Bulk Upload"),
+          ),
           SizedBox(width: 20,),
           ElevatedButton(
             onPressed: () async {

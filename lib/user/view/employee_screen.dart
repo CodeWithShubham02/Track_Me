@@ -588,8 +588,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       /// 🔴 INTERNET OFF
       if (!hasInternet && attendanceId != null) {
         // agar pehle se timer nahi chal raha
-        if (internetOffTimer == null) {
-          internetOffTimer = Timer(const Duration(minutes: 5), () async {
+        internetOffTimer ??= Timer(const Duration(minutes: 10), () async {
             final stillNoInternet = await hasRealInternet();
 
             if (!stillNoInternet &&
@@ -608,19 +607,17 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   context: context,
                   barrierDismissible: false,
                   builder: (_) => const AlertDialog(
-                    title: Text("Internet Off"),
+                    title: Text("Internet Connection Lost"),
                     content: Text(
-                      "Internet was off for 5 minutes.\n"
-                          "You have been auto punched out.",
+                        "Your internet connection was unavailable for more than 5 minutes.\n\n"
+                            "For attendance security, you have been automatically punched out.",
                     ),
                   ),
                 );
               });
             }
-
             internetOffTimer = null; // reset timer
           });
-        }
       }
 
       /// 🟢 INTERNET BACK
@@ -1559,6 +1556,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   () => UserLiveLocationScreen(
                 cid: widget.userModel.cid,
                 branch_name: widget.userModel.branchName,
+                    branchMap: widget.userModel.branchMap,
               ),
             );
           },

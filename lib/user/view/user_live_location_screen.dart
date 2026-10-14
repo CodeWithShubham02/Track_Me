@@ -16,7 +16,8 @@ import '../../api_urls.dart';
 class UserLiveLocationScreen extends StatefulWidget {
   final String cid;
   final String branch_name;
-  const UserLiveLocationScreen({super.key,required this.cid,required this.branch_name
+  final List<dynamic> branchMap;
+  const UserLiveLocationScreen({super.key,required this.cid,required this.branch_name, required this.branchMap,
   });
 
   @override
@@ -41,10 +42,26 @@ class _UserLiveLocationScreenState extends State<UserLiveLocationScreen> {
   Future<void> loadUsers() async {
     final fetchedUsers = await controller.fetchUsers();
 
+    final branches = widget.branchMap;
+
+    String branchName = '';
+
+    if (branches.isNotEmpty) {
+      final firstBranch = branches.first;
+
+      branchName = (firstBranch['branch_name'] ?? '').toString().trim();
+
+      print("Branch ID: ${firstBranch['branch_id']}");
+      print("Branch Name: $branchName");
+      print("Latitude: ${firstBranch['branch_lat']}");
+      print("Longitude: ${firstBranch['branch_long']}");
+      print("Distance: ${firstBranch['branch_distance']}");
+    }
+
     setState(() {
       users = fetchedUsers.where((user) {
         return user.branchName.trim().toLowerCase() ==
-            widget.branch_name.trim().toLowerCase();
+            branchName.toLowerCase();
       }).toList();
 
       isLoading = false;

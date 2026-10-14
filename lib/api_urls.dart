@@ -2,8 +2,10 @@ class ApiUrls {
   static const String baseUrl = "https://trackme.joizone.com/attendance/";
 
   //version
-  static const appVersionAdmin="1.4.3";
-  static const appVersionUser="1.1.3";
+  static const appVersionAdmin="1.7.4";
+  //appVersionAdmin="1.6.4" // In this version edit rosters of user
+  //appVersionAdmin="1.7.4" // In this version minor changes in approved report like manager remark remove and add site name column
+  static const appVersionUser="1.2.3";
   //Auth
   static const loginUser = "${baseUrl}loginUser.php";
 
@@ -12,9 +14,12 @@ class ApiUrls {
   static const String fetchUsersAttendanceRange ="${baseUrl}fetchUserAttendanceRange.php";
   static const String getFormReports ="${baseUrl}getFormReports.php";
   static const String mtdStatusReport ="${baseUrl}mtd_status_report.php";
+  static const String updateManualPunchOut = "${baseUrl}update_manual_punchout.php";
+  static const String updateUserRosterShift ="${baseUrl}update_user_roster_shift.php";
 
 
-
+  //Database manage url
+  static const String userDBFetch ="${baseUrl}users_listdb.php";
 
 
 
@@ -52,7 +57,6 @@ class ApiUrls {
   static const updateUserImg = "${baseUrl}update_user_img.php";
   static const weeklyTeamPerformance = "${baseUrl}weekly_team_performance.php";
   static const getDynamicForm = "${baseUrl}get_dynamic_form_details.php";
-
-
+  static const appRemovedLog  = "${baseUrl}app_removed_log.php";
 
 }

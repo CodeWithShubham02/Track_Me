@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:joizone/admin/roster/roster_screen.dart';
 import 'package:joizone/admin/view/add_user_screen.dart';
 import 'package:joizone/admin/view/create_form_screen.dart';
+import 'package:joizone/admin/view/roster_screen.dart';
 import 'package:joizone/admin/view/settings_screen.dart';
 import 'package:joizone/admin/view/shift_screen.dart';
 import 'package:joizone/admin/view/user_attendance_detail_screen.dart';
@@ -14,8 +15,6 @@ import 'package:joizone/api_urls.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../../chatbot/chatbot_screen.dart';
-import '../controller/attendance_location_controller.dart';
 import '../controller/user_controller.dart';
 import '../model/user_model.dart';
 import '../notification/send_notification_screen.dart';
@@ -1502,22 +1501,37 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             //     Get.to(()=>RosterScreen(cid: widget.cid,));
             //   },
             // ),
-            ListTile(
-              leading: Icon(Icons.help_center_outlined,color: Color(0xff2563EB),size: 22,),
-              title: Text("Permission",
-                style: TextStyle(
-                  color: Color(0xFF1E293B), // Dark Slate
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),),
-              onTap: () {
-                Get.back();
-                Get.to(()=>SettingsScreen(cid: widget.cid,));
-              },
-            ),
+
+            // ListTile(
+            //             //   leading: Icon(Icons.help_center_outlined,color: Color(0xff2563EB),size: 22,),
+            //             //   title: Text("Permission",
+            //             //     style: TextStyle(
+            //             //       color: Color(0xFF1E293B), // Dark Slate
+            //             //       fontSize: 15,
+            //             //       fontWeight: FontWeight.w600,
+            //             //     ),),
+            //             //   onTap: () {
+            //             //     Get.back();
+            //             //     Get.to(()=>SettingsScreen(cid: widget.cid,));
+            //             //   },
+            //             // ),
             // 🟢 LOCATION REPORT
+            // ListTile(
+            //   leading: Icon(Icons.edit_calendar,color: Color(0xff2563EB),size: 22,),
+            //   title: Text("Roster Edit",
+            //     style: TextStyle(
+            //       color: Color(0xFF1E293B), // Dark Slate
+            //       fontSize: 15,
+            //       fontWeight: FontWeight.w600,
+            //     ),),
+            //   onTap: () {
+            //     Get.back();
+            //     Get.to(()=>RosterEditScreen(cid: widget.cid,));
+            //   },
+            // ),
             ListTile(
-              leading: Icon(Icons.location_on,color: Color(0xff2563EB),size: 22,),
+              leading: Icon(
+                Icons.location_on, color: Color(0xff2563EB), size: 22,),
               title: Text("Location Tracking",
                 style: TextStyle(
                   color: Color(0xFF1E293B), // Dark Slate
@@ -1526,7 +1540,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 ),),
               onTap: () {
                 Get.back();
-                Get.to(()=>LocationHistoryScreen(cid: widget.cid,));
+                Get.to(() => LocationHistoryScreen(cid: widget.cid,));
               },
             ),
             ListTile(

@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:aws_s3_api/s3-2006-03-01.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:excel/excel.dart';
+import 'package:excel/excel.dart' hide Border;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +15,7 @@ import 'package:joizone/admin/view/inactive_user_screen.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html;
+import '../../api_urls.dart';
 import '../controller/user_controller.dart';
 import '../model/user_model.dart';
 import 'package:http/http.dart' as http;
@@ -232,8 +233,11 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
                         decoration: const InputDecoration(labelText: "IMEI No",border: OutlineInputBorder())),
                     SizedBox(height: 10,),
                     TextField(
+                        controller: branchIdController,
+                        decoration: const InputDecoration(labelText: "Branch ID",border: OutlineInputBorder())),
+                    SizedBox(height: 10,),
+                    TextField(
                         controller: branchNameController,
-                        readOnly: true,
                         decoration: const InputDecoration(labelText: "Branch",border: OutlineInputBorder())),
                     SizedBox(height: 10,),
                     TextField(
@@ -848,6 +852,85 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
       },
     );
   }
+  Future<bool> updateUserRosterShift({
+    required String uid,
+    required String cid,
+    required DateTime date,
+    required String shiftStart,
+    required String shiftEnd,
+  }) async {
+    try {
+      final rosterDate =
+          "${date.year.toString().padLeft(4, '0')}-"
+          "${date.month.toString().padLeft(2, '0')}-"
+          "${date.day.toString().padLeft(2, '0')}";
+
+      final response = await http.post(
+        Uri.parse(ApiUrls.updateUserRosterShift),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          "uid": uid,
+          "cid": cid,
+          "roster_date": rosterDate,
+          "shift_start": shiftStart,
+          "shift_end": shiftEnd,
+        }),
+      );
+
+      print("=================================");
+      print("UPDATE USER SHIFT API");
+      print("=================================");
+      print("UID: $uid");
+      print("CID: $cid");
+      print("Date: $rosterDate");
+      print("Start: $shiftStart");
+      print("End: $shiftEnd");
+      print("Status: ${response.statusCode}");
+      print("Response: ${response.body}");
+      print("=================================");
+
+      if (response.statusCode != 200) {
+        return false;
+      }
+
+      final data = jsonDecode(response.body);
+
+      if (data['status'] == true) {
+        return true;
+      }
+
+      Get.snackbar(
+        "Update Failed",
+        data['message'] ?? "Unable to update shift",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+
+      return false;
+    } catch (e) {
+      print("Update shift error: $e");
+
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+
+      return false;
+    }
+  }
+  String formatTime24(TimeOfDay time) {
+    return "${time.hour.toString().padLeft(2, '0')}:"
+        "${time.minute.toString().padLeft(2, '0')}:00";
+  }
+  String formatDate(DateTime date) {
+    return "${date.year.toString().padLeft(4, '0')}-"
+        "${date.month.toString().padLeft(2, '0')}-"
+        "${date.day.toString().padLeft(2, '0')}";
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1038,6 +1121,423 @@ class _UsersTableScreenState extends State<UsersTableScreen> {
                                       //   icon: const Icon(Icons.delete, color: Colors.red),
                                       //   onPressed: () => deleteUser(u),
                                       // ),
+                                      IconButton(
+                                        onPressed: () async {
+                                          print("=================================");
+                                          print("UPDATE USER SHIFT");
+                                          print("UID: ${u.uid}");
+                                          print("CID: ${u.cid}");
+                                          print("=================================");
+
+                                          DateTime? selectedDate;
+
+                                          TimeOfDay selectedStartTime = const TimeOfDay(
+                                            hour: 15,
+                                            minute: 0,
+                                          );
+
+                                          TimeOfDay selectedEndTime = const TimeOfDay(
+                                            hour: 23,
+                                            minute: 0,
+                                          );
+
+                                          await showDialog(
+                                            context: context,
+                                            builder: (dialogContext) {
+                                              return StatefulBuilder(
+                                                builder: (context, setDialogState) {
+                                                  return AlertDialog(
+                                                    title: Text(
+                                                      "Update User Shift - ${u.fullName}",
+                                                    ),
+
+                                                    content: SingleChildScrollView(
+                                                      child: Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+
+                                                          // ----------------------------------
+                                                          // SELECT DATE
+                                                          // ----------------------------------
+
+                                                          InkWell(
+                                                            onTap: () async {
+                                                              final picked =
+                                                              await showDatePicker(
+                                                                context: context,
+
+                                                                initialDate:
+                                                                DateTime.now(),
+
+                                                                firstDate:
+                                                                DateTime(2020),
+
+                                                                lastDate:
+                                                                DateTime(2050),
+                                                              );
+
+                                                              if (picked != null) {
+                                                                setDialogState(() {
+                                                                  selectedDate = picked;
+                                                                });
+                                                              }
+                                                            },
+
+                                                            child: Container(
+                                                              width: double.infinity,
+                                                              padding:
+                                                              const EdgeInsets.all(14),
+
+                                                              decoration: BoxDecoration(
+                                                                border:
+                                                                Border.all(
+                                                                  color: Colors.grey,
+                                                                ),
+                                                                borderRadius:
+                                                                BorderRadius.circular(8),
+                                                              ),
+
+                                                              child: Row(
+                                                                children: [
+
+                                                                  const Icon(
+                                                                    Icons.calendar_month,
+                                                                    color:
+                                                                    Color(0xff2563EB),
+                                                                  ),
+
+                                                                  const SizedBox(width: 10),
+
+                                                                  Expanded(
+                                                                    child: Text(
+                                                                      selectedDate == null
+                                                                          ? "Select Date"
+                                                                          : formatDate(
+                                                                        selectedDate!,
+                                                                      ),
+                                                                      style:
+                                                                      const TextStyle(
+                                                                        fontSize: 16,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+
+                                                                  const Icon(
+                                                                    Icons.arrow_drop_down,
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+
+                                                          const SizedBox(height: 15),
+
+                                                          // ----------------------------------
+                                                          // SHIFT START
+                                                          // ----------------------------------
+
+                                                          InkWell(
+                                                            onTap: () async {
+                                                              final picked =
+                                                              await showTimePicker(
+                                                                context: context,
+                                                                initialTime:
+                                                                selectedStartTime,
+                                                              );
+
+                                                              if (picked != null) {
+                                                                setDialogState(() {
+                                                                  selectedStartTime =
+                                                                      picked;
+                                                                });
+                                                              }
+                                                            },
+
+                                                            child: Container(
+                                                              width: double.infinity,
+                                                              padding:
+                                                              const EdgeInsets.all(14),
+
+                                                              decoration: BoxDecoration(
+                                                                border:
+                                                                Border.all(
+                                                                  color: Colors.grey,
+                                                                ),
+                                                                borderRadius:
+                                                                BorderRadius.circular(8),
+                                                              ),
+
+                                                              child: Row(
+                                                                children: [
+
+                                                                  const Icon(
+                                                                    Icons.login,
+                                                                    color: Colors.green,
+                                                                  ),
+
+                                                                  const SizedBox(width: 10),
+
+                                                                  const Text(
+                                                                    "Shift Start",
+                                                                    style:
+                                                                    TextStyle(
+                                                                      fontWeight:
+                                                                      FontWeight.w500,
+                                                                    ),
+                                                                  ),
+
+                                                                  const Spacer(),
+
+                                                                  Text(
+                                                                    formatTime24(
+                                                                      selectedStartTime,
+                                                                    ),
+                                                                    style:
+                                                                    const TextStyle(
+                                                                      fontWeight:
+                                                                      FontWeight.bold,
+                                                                    ),
+                                                                  ),
+
+                                                                  const SizedBox(width: 5),
+
+                                                                  const Icon(
+                                                                    Icons.access_time,
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+
+                                                          const SizedBox(height: 15),
+
+                                                          // ----------------------------------
+                                                          // SHIFT END
+                                                          // ----------------------------------
+
+                                                          InkWell(
+                                                            onTap: () async {
+                                                              final picked =
+                                                              await showTimePicker(
+                                                                context: context,
+                                                                initialTime:
+                                                                selectedEndTime,
+                                                              );
+
+                                                              if (picked != null) {
+                                                                setDialogState(() {
+                                                                  selectedEndTime =
+                                                                      picked;
+                                                                });
+                                                              }
+                                                            },
+
+                                                            child: Container(
+                                                              width: double.infinity,
+                                                              padding:
+                                                              const EdgeInsets.all(14),
+
+                                                              decoration: BoxDecoration(
+                                                                border:
+                                                                Border.all(
+                                                                  color: Colors.grey,
+                                                                ),
+                                                                borderRadius:
+                                                                BorderRadius.circular(8),
+                                                              ),
+
+                                                              child: Row(
+                                                                children: [
+
+                                                                  const Icon(
+                                                                    Icons.logout,
+                                                                    color: Colors.red,
+                                                                  ),
+
+                                                                  const SizedBox(width: 10),
+
+                                                                  const Text(
+                                                                    "Shift End",
+                                                                    style:
+                                                                    TextStyle(
+                                                                      fontWeight:
+                                                                      FontWeight.w500,
+                                                                    ),
+                                                                  ),
+
+                                                                  const Spacer(),
+
+                                                                  Text(
+                                                                    formatTime24(
+                                                                      selectedEndTime,
+                                                                    ),
+                                                                    style:
+                                                                    const TextStyle(
+                                                                      fontWeight:
+                                                                      FontWeight.bold,
+                                                                    ),
+                                                                  ),
+
+                                                                  const SizedBox(width: 5),
+
+                                                                  const Icon(
+                                                                    Icons.access_time,
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+
+                                                          const SizedBox(height: 15),
+
+                                                          // ----------------------------------
+                                                          // PREVIEW
+                                                          // ----------------------------------
+
+                                                          if (selectedDate != null)
+                                                            Container(
+                                                              width: double.infinity,
+                                                              padding:
+                                                              const EdgeInsets.all(12),
+
+                                                              decoration: BoxDecoration(
+                                                                color:
+                                                                Colors.blue.shade50,
+                                                                borderRadius:
+                                                                BorderRadius.circular(8),
+                                                              ),
+
+                                                              child: Column(
+                                                                crossAxisAlignment:
+                                                                CrossAxisAlignment.start,
+                                                                children: [
+
+                                                                  Text(
+                                                                    "Date: ${formatDate(selectedDate!)}",
+                                                                    style:
+                                                                    const TextStyle(
+                                                                      fontWeight:
+                                                                      FontWeight.bold,
+                                                                    ),
+                                                                  ),
+
+                                                                  const SizedBox(height: 5),
+
+                                                                  Text(
+                                                                    "Shift: "
+                                                                        "${formatTime24(selectedStartTime)}"
+                                                                        " - "
+                                                                        "${formatTime24(selectedEndTime)}",
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      ),
+                                                    ),
+
+                                                    // ----------------------------------
+                                                    // ACTIONS
+                                                    // ----------------------------------
+
+                                                    actions: [
+
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(dialogContext);
+                                                        },
+                                                        child:
+                                                        const Text("Cancel"),
+                                                      ),
+
+                                                      ElevatedButton(
+                                                        onPressed: () async {
+
+                                                          // ----------------------------
+                                                          // DATE REQUIRED
+                                                          // ----------------------------
+
+                                                          if (selectedDate == null) {
+
+                                                            ScaffoldMessenger.of(context)
+                                                                .showSnackBar(
+                                                              const SnackBar(
+                                                                content: Text(
+                                                                  "Please select date",
+                                                                ),
+                                                                backgroundColor:
+                                                                Colors.red,
+                                                              ),
+                                                            );
+
+                                                            return;
+                                                          }
+
+                                                          // ----------------------------
+                                                          // UPDATE
+                                                          // ----------------------------
+
+                                                          final success =
+                                                          await updateUserRosterShift(
+                                                            uid: u.uid.toString(),
+
+                                                            cid: u.cid.toString(),
+
+                                                            date: selectedDate!,
+
+                                                            shiftStart:
+                                                            formatTime24(
+                                                              selectedStartTime,
+                                                            ),
+
+                                                            shiftEnd:
+                                                            formatTime24(
+                                                              selectedEndTime,
+                                                            ),
+                                                          );
+
+                                                          if (success) {
+
+                                                            Navigator.pop(
+                                                              dialogContext,
+                                                            );
+
+                                                            await loadUsers();
+
+                                                            if (mounted) {
+                                                              setState(() {});
+                                                            }
+
+                                                            ScaffoldMessenger.of(
+                                                                context)
+                                                                .showSnackBar(
+                                                              const SnackBar(
+                                                                content: Text(
+                                                                  "User shift updated successfully",
+                                                                ),
+                                                                backgroundColor:
+                                                                Colors.green,
+                                                              ),
+                                                            );
+                                                          }
+                                                        },
+
+                                                        child:
+                                                        const Text("Update"),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          );
+                                        },
+
+                                        icon: const Icon(
+                                          Icons.watch_later_outlined,
+                                          color: Colors.redAccent,
+                                        ),
+                                      ),
                                     ],
                                   )),
                                   //DataCell(Text(u.uid)),

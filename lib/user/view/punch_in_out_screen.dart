@@ -452,7 +452,7 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
     final allowedStart = start.subtract(const Duration(minutes: 480));
     // final presentLimit = start.add(const Duration(minutes: 10));
-    final onTimeLimit = start.add(Duration(minutes: 5));
+    final onTimeLimit = start.add(Duration(minutes: 6));
     final halfDayLimit = start.add(Duration(hours: 2));
     // ❌ Too early
     if (now.isBefore(allowedStart)) {
@@ -550,8 +550,9 @@ class _PunchInOutScreenState extends State<PunchInOutScreen> {
 
       await stopLocationTracking();
       await prefs.remove('attendance_id');
-      await prefs.remove('uid');
-      await prefs.remove('cid');
+      await prefs.remove('punch_in_time');
+
+      attendanceId = null;
 
       debugPrint("✅ Auto punch out done due to GPS OFF");
     } catch (e) {
@@ -815,37 +816,53 @@ print(res);
   }
   //----end shift
   Future<void> stopLocationTracking() async {
-    // 🚨 FIRST LINE (MOST IMPORTANT)
+    debugPrint("======================================");
+    debugPrint("🛑 STOP LOCATION TRACKING");
+    debugPrint("======================================");
+
+    // Stop local tracking
     isTrackingActive = false;
 
+    // Stop local timer
     locationTimer?.cancel();
     locationTimer = null;
 
-    if (attendanceId == null) return;
+    debugPrint("✅ Local location timer stopped");
 
+    // Stop background service
     try {
-      await http.post(
-        Uri.parse(
-          ApiUrls.punchOut
-        ),
-        body: {
-          "attendance_id": attendanceId!,
-          "status": "stop",
-        },
-      );
+      final service = FlutterBackgroundService();
+
+      final running = await service.isRunning();
+
+      debugPrint("Background service running: $running");
+
+      if (running) {
+        service.invoke('stopService');
+        debugPrint("🛑 Background service stop requested");
+      }
     } catch (e) {
-      debugPrint("Stop tracking API error: $e");
+      debugPrint("❌ Background service stop error: $e");
     }
 
-    FlutterBackgroundService().invoke('stopService');
+    // =====================================================
+    // VERY IMPORTANT
+    // =====================================================
+    // DO NOT:
+    //
+    // await prefs.remove('attendance_id');
+    // await prefs.remove('punch_in_time');
+    // await prefs.clear();
+    //
+    // This function only stops tracking.
+    // Attendance remains active.
+    // =====================================================
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('attendance_id');
-    await prefs.clear();
+    debugPrint(
+      "📌 Attendance ID preserved: $attendanceId",
+    );
 
-    attendanceId = null;
-
-    debugPrint("🛑 Tracking HARD stopped");
+    debugPrint("======================================");
   }
 
   // ---------------- PUNCH OUT ----------------
@@ -910,12 +927,13 @@ print(res);
 
       // 🔥 STOP GPS
       await stopLocationTracking();
-      // ❌ REMOVE attendance_id
+
       await prefs.remove('attendance_id');
+      await prefs.remove('punch_in_time');
       attendanceId = null;
-      await prefs.remove('uid');
-      await prefs.remove('cid');
-      await prefs.clear();
+      // await prefs.remove('uid');
+      // await prefs.remove('cid');
+      // await prefs.clear();
 
       // 🛑 STOP SERVICE
       FlutterBackgroundService().invoke('stopService');

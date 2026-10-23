@@ -36,111 +36,80 @@ class _GetAllDynamicFormScreenState
     fetchForms();
   }
 
+
   Future<void> fetchForms() async {
+    if (!mounted) return;
+
     setState(() {
       loading = true;
     });
 
     try {
       final branchNames = widget.userModel.branchMap
-          .map(
-            (branch) =>
-        branch['branch_name']?.toString().trim() ?? '',
-      )
+          .map((branch) =>
+      branch['branch_name']?.toString().trim() ?? '')
           .where((name) => name.isNotEmpty)
           .toSet()
           .toList();
 
-      final date = DateFormat("yyyy-MM-dd").format(selectedDate);
+      final date = DateFormat('yyyy-MM-dd').format(selectedDate);
 
-      print("========== USER ROLE ==========");
-      print(widget.userModel.departmentName);
+      debugPrint('ROLE: ${widget.userModel.departmentName}');
+      debugPrint('CID: ${widget.userModel.cid}');
+      debugPrint('BRANCHES: $branchNames');
+      debugPrint('DATE: $date');
 
-      print("========== USER BRANCHES ==========");
-      print(branchNames);
+      if (branchNames.isEmpty) {
+        setState(() {
+          formList = [];
+        });
+        return;
+      }
 
-      print("========== DATE ==========");
-      print(date);
+      // Same API request for Team Leader and User
+      final response = await http
+          .post(
+        Uri.parse(ApiUrls.getBranchTodayForm),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'cid': widget.userModel.cid.toString(),
+          'branch_name': branchNames,
+          'date': date,
+        }),
+      )
+          .timeout(const Duration(seconds: 30));
 
-      if (widget.userModel.departmentName == "Team Leader") {
-        // =====================================================
-        // TEAM LEADER
-        // MULTIPLE BRANCHES
-        // =====================================================
+      debugPrint('API STATUS: ${response.statusCode}');
+      debugPrint('API RESPONSE: ${response.body}');
 
-        if (branchNames.isEmpty) {
-          setState(() {
-            formList = [];
-            loading = false;
-          });
-          return;
-        }
+      if (response.statusCode != 200) {
+        throw Exception('API returned ${response.statusCode}');
+      }
 
-        final response = await http.post(
-          Uri.parse(ApiUrls.getBranchTodayForm),
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: jsonEncode({
-            "cid": widget.userModel.cid,
-            "branch_name": branchNames,
-            "date": date,
-          }),
-        );
+      final decoded = jsonDecode(response.body);
 
-        print("========== API STATUS ==========");
-        print(response.statusCode);
+      if (decoded is Map && decoded['status'] == true) {
+        final data = decoded['data'];
 
-        print("========== API RESPONSE ==========");
-        print(response.body);
+        if (!mounted) return;
 
-        final json = jsonDecode(response.body);
-
-        if (json["status"] == true) {
-          setState(() {
-            formList = json["data"] ?? [];
-          });
-        } else {
-          setState(() {
-            formList = [];
-          });
-        }
+        setState(() {
+          formList = data is List ? List<dynamic>.from(data) : [];
+        });
       } else {
-        // =====================================================
-        // NORMAL USER
-        // SINGLE BRANCH
-        // =====================================================
+        if (!mounted) return;
 
-        final response = await http.post(
-          Uri.parse(ApiUrls.getBranchTodayForm),
-          body: {
-            "cid": widget.userModel.cid,
-            "branch_name": widget.userModel.branchName,
-            "date": date,
-          },
-        );
+        setState(() {
+          formList = [];
+        });
 
-        print("========== API STATUS ==========");
-        print(response.statusCode);
-
-        print("========== API RESPONSE ==========");
-        print(response.body);
-
-        final json = jsonDecode(response.body);
-
-        if (json["status"] == true) {
-          setState(() {
-            formList = json["data"] ?? [];
-          });
-        } else {
-          setState(() {
-            formList = [];
-          });
-        }
+        debugPrint('API message: ${decoded['message']}');
       }
     } catch (e, stackTrace) {
-      print("❌ Fetch Forms Error: $e");
-      print(stackTrace);
+      debugPrint('Fetch forms error: $e');
+      debugPrint('$stackTrace');
 
       if (!mounted) return;
 
@@ -155,6 +124,7 @@ class _GetAllDynamicFormScreenState
       }
     }
   }
+
 
   Future<void> pickDate() async {
 

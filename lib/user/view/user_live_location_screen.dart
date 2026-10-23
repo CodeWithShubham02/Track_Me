@@ -39,34 +39,52 @@ class _UserLiveLocationScreenState extends State<UserLiveLocationScreen> {
     loadUsers();
   }
 
+
   Future<void> loadUsers() async {
-    final fetchedUsers = await controller.fetchUsers();
+    try {
+      final fetchedUsers =
+      await controller.fetchUsersByCid1(widget.cid);
 
-    final branches = widget.branchMap;
+      // Get all branch names from branchMap
+      final Set<String> branchNames = widget.branchMap
+          .map((branch) =>
+          (branch['branch_name'] ?? '')
+              .toString()
+              .trim()
+              .toLowerCase())
+          .where((name) => name.isNotEmpty)
+          .toSet();
 
-    String branchName = '';
+      // Debug: print all assigned branches
+      print('Assigned Branches: $branchNames');
 
-    if (branches.isNotEmpty) {
-      final firstBranch = branches.first;
-
-      branchName = (firstBranch['branch_name'] ?? '').toString().trim();
-
-      print("Branch ID: ${firstBranch['branch_id']}");
-      print("Branch Name: $branchName");
-      print("Latitude: ${firstBranch['branch_lat']}");
-      print("Longitude: ${firstBranch['branch_long']}");
-      print("Distance: ${firstBranch['branch_distance']}");
-    }
-
-    setState(() {
-      users = fetchedUsers.where((user) {
-        return user.branchName.trim().toLowerCase() ==
-            branchName.toLowerCase();
+      // Filter users matching ANY assigned branch
+      final filteredUsers = fetchedUsers.where((user) {
+        return branchNames.contains(
+          user.branchName.trim().toLowerCase(),
+        );
       }).toList();
 
-      isLoading = false;
-    });
+      print('Filtered Users: ${filteredUsers.length}');
+
+      if (!mounted) return;
+
+      setState(() {
+        users = filteredUsers;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Error loading users: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        users = [];
+        isLoading = false;
+      });
+    }
   }
+
 
   /// 📅 Open Date Picker
   Future<void> pickDate() async {

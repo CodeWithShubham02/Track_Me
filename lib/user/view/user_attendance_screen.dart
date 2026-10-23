@@ -1,9 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:intl/intl.dart';
 import 'package:joizone/admin/model/user_model.dart';
 import 'package:joizone/api_urls.dart';
+import 'package:joizone/user/view/month_wise_user_att_screen.dart';
 import '../controller/attendance_by_kiosk_controller.dart';
 import '../controller/attendance_controller.dart';
 import 'package:http/http.dart' as http;
@@ -206,12 +209,14 @@ class _OfficeAttendanceScreenState extends State<OfficeAttendanceScreen> {
               ),
               columns: const [
                 DataColumn(label: Text("Action")),
+                DataColumn(label: Text("Date")),
                 DataColumn(label: Text("Name")),
                 DataColumn(label: Text("Status")),
+                DataColumn(label: Text("Late Status")),
                 DataColumn(label: Text("Punch In")),
                 DataColumn(label: Text("Punch Out")),
-                // DataColumn(label: Text("Punch In Remark")),
-                // DataColumn(label: Text("Punch Out Remark")),
+                DataColumn(label: Text("Punch In Remark")),
+                DataColumn(label: Text("Punch Out Remark")),
                 DataColumn(label: Text("In Img")),
                 DataColumn(label: Text("Out Img")),
                 DataColumn(label: Text("User Type")),
@@ -339,6 +344,7 @@ class _OfficeAttendanceScreenState extends State<OfficeAttendanceScreen> {
                     ),
 
                     /// Name
+                    DataCell(Text(r['created_at']?.toString() ?? "-")),
                     DataCell(Text(r['name']?.toString() ?? "-")),
 
                     /// Status
@@ -353,7 +359,9 @@ class _OfficeAttendanceScreenState extends State<OfficeAttendanceScreen> {
                         ),
                       ),
                     ),
-
+                    DataCell(
+                      Text(r['late']?.toString() ?? "-"),
+                    ),
                     /// Punch In
                     DataCell(
                       Text(
@@ -371,7 +379,20 @@ class _OfficeAttendanceScreenState extends State<OfficeAttendanceScreen> {
                         ),
                       ),
                     ),
-
+                    DataCell(
+                      Text(
+                        formatTime(
+                          r['punch_in_remark']?.toString(),
+                        ),
+                      ),
+                    ),
+                    DataCell(
+                      Text(
+                        formatTime(
+                          r['punch_out_remark']?.toString(),
+                        ),
+                      ),
+                    ),
                     /// Punch In Image
                     DataCell(
                       r['punch_in_image'] != null &&
@@ -399,10 +420,10 @@ class _OfficeAttendanceScreenState extends State<OfficeAttendanceScreen> {
                     ),
 
                     /// Department
+
                     DataCell(
                       Text(r['department']?.toString() ?? "-"),
                     ),
-
                     /// Shift
                     DataCell(
                       Text(
@@ -442,7 +463,7 @@ class _OfficeAttendanceScreenState extends State<OfficeAttendanceScreen> {
           style: const TextStyle(color: Colors.white),
           onChanged: filterByName,
         )
-            : Text("Attendance - ${widget.officeName}",style: TextStyle(color: Colors.white,fontSize: 18),),
+            : Text("User Attendance",style: TextStyle(color: Colors.white,fontSize: 18),),
         actions: [
           IconButton(
             icon: Icon(
@@ -460,6 +481,32 @@ class _OfficeAttendanceScreenState extends State<OfficeAttendanceScreen> {
               });
             },
           ),
+          TextButton(
+            onPressed: () {
+              Get.to(()=>MonthWiseUserAttScreen(cid:widget.userModel.cid,
+                branchMap:widget.userModel.branchMap
+              ));
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.blue,
+              backgroundColor: Colors.blue.shade50,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 10,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Month Wise',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          SizedBox(width: 5,),
         ],
       ),
       body: Padding(

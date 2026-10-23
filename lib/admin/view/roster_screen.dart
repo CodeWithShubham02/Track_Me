@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 import '../../api_urls.dart';
 import '../controller/shift_controller.dart';
@@ -414,6 +415,28 @@ class _RosterEditScreenState extends State<RosterEditScreen> {
       );
     }
   }
+
+  //-------------------------------
+//------------update weekly off----------
+  Future<bool> updateHoliday({
+    required String id,
+    required DateTime date,
+  }) async {
+    final response = await http.post(
+      Uri.parse("https://trackme.joizone.com/attendance/updateHoliday.php"),
+      body: {
+        "id": id,
+        "date": DateFormat('yyyy-MM-dd').format(date),
+      },
+    );
+
+    print(response.body);
+
+    final json = jsonDecode(response.body);
+    return json["status"] == true;
+  }
+
+
   Future<void> showEditShiftDialog(
       Map<String, dynamic> roster,
       ) async {
@@ -675,6 +698,8 @@ class _RosterEditScreenState extends State<RosterEditScreen> {
               DataColumn(label: Text('Roster Date')),
               DataColumn(label: Text('Shift Start')),
               DataColumn(label: Text('Shift End')),
+              DataColumn(label: Text('WO Status')),
+              // DataColumn(label: Text('A ID')),
               DataColumn(label: Text('Action')),
             ],
             rows: List.generate(
@@ -700,6 +725,12 @@ class _RosterEditScreenState extends State<RosterEditScreen> {
 
                 final shiftEnd =
                 roster['shift_end']?.toString();
+                final woStatus =
+                roster['holyday_status']?.toString()?? '-';
+
+                final weeklyOff=woStatus=='HOLYDAY'?'WO':'-';
+                final attendanceid =
+                roster['attendance_id']?.toString()?? '-';
 
                 return DataRow(
                   cells: [
@@ -731,31 +762,174 @@ class _RosterEditScreenState extends State<RosterEditScreen> {
                     DataCell(
                       Text(formatTime(shiftEnd)),
                     ),
-
                     DataCell(
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          showEditShiftDialog(roster);
-                        },
-                        icon: const Icon(
-                          Icons.edit,
-                          size: 16,
-                        ),
-                        label: const Text('Edit'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                          Colors.blue.shade700,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
+                      Text(weeklyOff),
+                    ),
+                    // DataCell(
+                    //   Text(attendanceid),
+                    // ),
+                    DataCell(
+                      Row(
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              showEditShiftDialog(roster);
+                            },
+                            icon: const Icon(
+                              Icons.watch_later_outlined,
+                              size: 16,
+                            ),
+                            label: const Text('Edit Shift'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                              Colors.blue.shade700,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(8),
+                              ),
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                            BorderRadius.circular(8),
-                          ),
-                        ),
+                          SizedBox(width: 10,),
+                          weeklyOff=='WO'?ElevatedButton.icon(
+                            onPressed: () async {
+                              print(
+                                "Attendance id: ${attendanceid}",
+                              );
+
+                              // 1. API Call
+                              // await getAttendanceDetails(e['id']);
+
+                              // 2. Open Dialog
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  DateTime? selectedDate;
+
+                                  return AlertDialog(
+                                    title: const Text(
+                                      "Update Weekly Off",
+                                    ),
+                                    content: StatefulBuilder(
+                                      builder: (context, setState) {
+                                        return Column(
+                                          mainAxisSize:
+                                          MainAxisSize.min,
+                                          children: [
+                                            ElevatedButton.icon(
+                                              onPressed: () async {
+                                                DateTime?
+                                                picked = await showDatePicker(
+                                                  context:
+                                                  context,
+                                                  initialDate:
+                                                  DateTime.now(),
+                                                  firstDate:  DateTime.now().subtract(
+                                                    Duration(days:  DateTime.now().weekday - 1),
+                                                  ),
+                                                  lastDate:  DateTime.now().add(
+                                                    Duration(days: 7 -  DateTime.now().weekday),
+                                                  ),
+                                                );
+
+                                                if (picked !=
+                                                    null) {
+                                                  setState(() {
+                                                    selectedDate =
+                                                        picked;
+                                                  });
+                                                }
+                                              },
+                                              icon: const Icon(
+                                                Icons
+                                                    .calendar_month,
+                                                color:   Color(0xff2563EB),
+                                              ),
+                                              label: Text(
+                                                selectedDate ==
+                                                    null
+                                                    ? "Select Date"
+                                                    : "${selectedDate!.day}-${selectedDate!.month}-${selectedDate!.year}",
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(
+                                              context,
+                                            ),
+                                        child: const Text(
+                                          "Cancel",
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () async {
+                                          if (selectedDate == null) return;
+
+                                          bool success = await updateHoliday(
+                                            id: attendanceid.toString(),
+                                            date: selectedDate!,
+                                          );
+
+                                          if (success) {
+                                            Navigator.pop(context);
+                                            await fetchRoster();
+                                            setState(() {});
+
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text("Weekly Off updated successfully"),
+                                                backgroundColor: Colors.green,
+                                              ),
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text("Update failed"),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        child: const Text(
+                                          "Update",
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.next_week_outlined,
+                              size: 16,
+                            ),
+                            label: const Text('Edit WO'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                              Colors.blue.shade700,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(8),
+                              ),
+                            ),
+                          ):SizedBox.shrink(),
+                        ],
                       ),
+
                     ),
                   ],
                 );

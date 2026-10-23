@@ -20,7 +20,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  String selectedRole = 'admin';
+  String selectedRole = 'user';
   final UserController userController=UserController();
   final TextEditingController userIdCtrl = TextEditingController();
   final TextEditingController passwordCtrl = TextEditingController();
@@ -730,7 +730,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 15),
 
                       Text(
-                        "Version ${ApiUrls.appVersionAdmin}",
+                        "Version ${ApiUrls.appVersionUser}",
                         style: TextStyle(
                           color: Colors.grey.shade600,
                         ),
